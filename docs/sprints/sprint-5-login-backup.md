@@ -76,6 +76,13 @@ não é só esconder o botão.
 
 - **Barra de status legível:** ícones escuros fixos (o app é sempre claro), corrigindo a hora e
   a bateria que sumiam no fundo claro — visto no teste no celular real.
+- **Botão principal invisível (bug desde a Sprint 1, achado no celular real):** o texto do
+  `BotaoPrincipal` usava a cor padrão `onPrimary`, que era tinta — preto no preto. Agora o texto é
+  branco explícito.
+- **Contraste do amarelo:** o Material usa a cor `primary` em botões de texto ("Hoje",
+  "Cancelar"), foco dos campos e calendário. Com `primary` = amarelo, ficavam ilegíveis no fundo
+  claro. Agora `primary` = tinta, e o amarelo é aplicado de propósito nos destaques (botões
+  flutuantes, seleções, aba ativa) — como o CLAUDE.md define.
 - **CI:** `actions/upload-artifact` v4 → v5 (fim do aviso de Node 20 no GitHub Actions).
 - **Sem avisos de compilação** (troca de `LocalClipboardManager`, obsoleto, por `LocalClipboard`).
 - `versionName` 1.0.0.

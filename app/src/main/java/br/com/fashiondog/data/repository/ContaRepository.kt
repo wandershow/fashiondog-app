@@ -108,6 +108,23 @@ class ContaRepository(
         dao.atualizar(usuario.copy(senhaHash = HashDeSenha.gerar(novaSenha)))
     }
 
+    fun usuarioAtual(): Usuario? = sessao.usuarioAtual
+
+    /** Muda o nome e o login de quem está logado (ex.: corrigir um erro de digitação). */
+    suspend fun atualizarMinhaConta(nome: String, login: String): Result<Usuario> = withContext(Dispatchers.Default) {
+        val eu = sessao.usuarioAtual?.let { dao.buscarPorId(it.id) }
+            ?: return@withContext Result.failure(IllegalStateException("Nenhum usuário logado"))
+        val loginLimpo = ValidacaoDeConta.normalizarLogin(login)
+        val erro = ValidacaoDeConta.erroNome(nome)
+            ?: ValidacaoDeConta.erroNovoLogin(loginLimpo, eu.id, dao.buscarQualquerPorLogin(loginLimpo)?.id)
+        if (erro != null) return@withContext Result.failure(IllegalArgumentException(erro))
+
+        val atualizado = eu.copy(nome = nome.trim(), login = loginLimpo)
+        dao.atualizar(atualizado)
+        sessao.atualizar(atualizado)
+        Result.success(atualizado)
+    }
+
     suspend fun trocarMinhaSenha(senhaAtual: String, novaSenha: String): Result<Unit> = withContext(Dispatchers.Default) {
         val eu = sessao.usuarioAtual?.let { dao.buscarPorId(it.id) }
         if (eu == null || !HashDeSenha.confere(senhaAtual, eu.senhaHash)) {

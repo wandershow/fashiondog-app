@@ -16,6 +16,8 @@ data class Usuario(
     val senhaHash: String,
     val perfil: Perfil,
     val ativo: Boolean = true,
+    /** Só do proprietário: hash do código para recuperar a senha (versão 2 do banco). */
+    val codigoRecuperacaoHash: String? = null,
 )
 
 @Entity(tableName = "tutor")

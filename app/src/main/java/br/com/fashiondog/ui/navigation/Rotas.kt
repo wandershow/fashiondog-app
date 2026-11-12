@@ -30,6 +30,9 @@ object Rotas {
 
     const val SERVICOS = "mais/servicos"
     const val AVISOS = "mais/avisos"
+    const val USUARIOS = "mais/usuarios"
+    const val BACKUP = "mais/backup"
+    const val TROCAR_SENHA = "mais/senha"
 
     const val DESPESA_FORM = "financeiro/despesa/nova"
 

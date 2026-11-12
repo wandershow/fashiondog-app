@@ -63,7 +63,8 @@ class AtendimentoDetalheViewModel(repositorio: AtendimentoRepository, argumentos
 fun AtendimentoDetalheScreen(
     aoVoltar: () -> Unit,
     aoEditar: (Long) -> Unit,
-    podeEditar: Boolean = true,
+    /** Recebe a data do atendimento: funcionário só edita os de hoje. */
+    podeEditar: (dataAtendimento: Long) -> Boolean = { true },
 ) {
     val vm = viewModelDoApp { app, args -> AtendimentoDetalheViewModel(app.atendimentos, args) }
     val estado by vm.estado.collectAsStateWithLifecycle()
@@ -75,7 +76,8 @@ fun AtendimentoDetalheConteudo(
     estado: AtendimentoDetalheEstado,
     aoVoltar: () -> Unit,
     aoEditar: (Long) -> Unit,
-    podeEditar: Boolean = true,
+    /** Recebe a data do atendimento: funcionário só edita os de hoje. */
+    podeEditar: (dataAtendimento: Long) -> Boolean = { true },
 ) {
     var fotoAmpliada by remember { mutableStateOf<Foto?>(null) }
 
@@ -84,7 +86,7 @@ fun AtendimentoDetalheConteudo(
         aoVoltar = aoVoltar,
         acoes = {
             val detalhe = estado.detalhe
-            if (podeEditar && detalhe != null) {
+            if (detalhe != null && podeEditar(detalhe.atendimento.data)) {
                 IconButton(onClick = { aoEditar(detalhe.atendimento.id) }) {
                     Icon(Icons.Filled.Edit, contentDescription = "Editar atendimento")
                 }

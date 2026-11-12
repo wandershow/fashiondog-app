@@ -1,11 +1,14 @@
 package br.com.fashiondog.di
 
 import android.content.Context
+import androidx.datastore.preferences.preferencesDataStore
+import br.com.fashiondog.backup.BackupDoApp
 import br.com.fashiondog.data.fotos.ArmazenamentoDeFotos
 import br.com.fashiondog.data.local.AppDatabase
 import br.com.fashiondog.data.repository.AgendaRepository
 import br.com.fashiondog.data.repository.AtendimentoRepository
 import br.com.fashiondog.data.repository.CadastroRepository
+import br.com.fashiondog.data.repository.ContaRepository
 import br.com.fashiondog.data.repository.FinanceiroRepository
 import br.com.fashiondog.notifications.Avisos
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +22,9 @@ import kotlinx.coroutines.SupervisorJob
  * Escolhemos isto em vez do Hilt porque o app é pequeno: não precisa de
  * plugin extra nem anotações, e dá para ver exatamente de onde vem cada objeto.
  */
+/** Arquivo pequeno de preferências (DataStore). Hoje guarda só quem está logado. */
+private val Context.preferenciasDoApp by preferencesDataStore(name = "preferencias")
+
 class AppContainer(context: Context) {
 
     private val appContext = context.applicationContext
@@ -32,7 +38,11 @@ class AppContainer(context: Context) {
 
     val avisos: Avisos by lazy { Avisos(appContext) }
 
-    val sessao: Sessao by lazy { Sessao(database) }
+    val sessao: Sessao by lazy { Sessao(database, appContext.preferenciasDoApp) }
+
+    val contas: ContaRepository by lazy { ContaRepository(database, sessao) }
+
+    val backup: BackupDoApp by lazy { BackupDoApp(appContext, sessao) }
 
     val cadastro: CadastroRepository by lazy { CadastroRepository(database) }
 

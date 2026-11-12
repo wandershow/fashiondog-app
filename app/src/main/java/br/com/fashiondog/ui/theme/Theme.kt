@@ -5,8 +5,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val CoresFashionDog = lightColorScheme(
-    primary = Amarelo,
-    onPrimary = Tinta,
+    // primary = tinta: o Material usa primary em textos de botão, foco de campo e calendário;
+    // em amarelo ficavam ilegíveis no fundo claro. O amarelo é usado direto nos destaques.
+    primary = Tinta,
+    onPrimary = Branco,
     primaryContainer = AmareloClaro,
     onPrimaryContainer = Tinta,
     secondary = Tinta,

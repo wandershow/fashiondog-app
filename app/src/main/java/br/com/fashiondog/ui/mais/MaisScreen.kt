@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.preview.PreviewNoTema
 
@@ -24,9 +25,17 @@ data class OpcaoMais(
 )
 
 @Composable
-fun MaisScreen(opcoes: List<OpcaoMais>) {
+fun MaisScreen(opcoes: List<OpcaoMais>, cabecalho: String? = null) {
     Tela(titulo = "Mais") { espacamento ->
         Column(modifier = Modifier.fillMaxSize().padding(espacamento)) {
+            cabecalho?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
             opcoes.filter { it.visivel }.forEach { opcao ->
                 ListItem(
                     headlineContent = { Text(opcao.titulo) },
@@ -44,7 +53,8 @@ fun MaisScreen(opcoes: List<OpcaoMais>) {
 @Composable
 private fun PreviewMais() = PreviewNoTema {
     MaisScreen(
-        listOf(
+        cabecalho = "Maria Souza · Proprietário",
+        opcoes = listOf(
             OpcaoMais("Serviços e preços", "Preço sugerido de cada serviço") {},
             OpcaoMais("Avisos", "Notificações e horário exato dos lembretes") {},
         ),

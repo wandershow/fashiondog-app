@@ -48,6 +48,7 @@ import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
 import br.com.fashiondog.ui.preview.DadosDePreview
 import br.com.fashiondog.ui.preview.PreviewNoTema
+import br.com.fashiondog.ui.theme.Amarelo
 import br.com.fashiondog.ui.theme.Tinta
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -150,7 +151,7 @@ fun FichaPetConteudo(
                     onClick = { estado.item?.let { aoNovoAtendimento(it.pet.id) } },
                     icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                     text = { Text("Registrar atendimento") },
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = Amarelo,
                     contentColor = Tinta,
                 )
             }

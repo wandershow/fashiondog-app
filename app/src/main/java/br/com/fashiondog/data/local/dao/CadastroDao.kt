@@ -25,6 +25,19 @@ interface UsuarioDao {
 
     @Query("SELECT COUNT(*) FROM usuario")
     suspend fun contar(): Int
+
+    @Query("SELECT * FROM usuario WHERE id = :id")
+    suspend fun buscarPorId(id: Long): Usuario?
+
+    /** Inclui inativos: um login nunca pode ser reaproveitado (o histórico aponta para ele). */
+    @Query("SELECT * FROM usuario WHERE login = :login LIMIT 1")
+    suspend fun buscarQualquerPorLogin(login: String): Usuario?
+
+    @Query("SELECT * FROM usuario WHERE perfil = 'PROPRIETARIO' ORDER BY id LIMIT 1")
+    suspend fun buscarProprietario(): Usuario?
+
+    @Query("SELECT * FROM usuario ORDER BY ativo DESC, nome COLLATE NOCASE")
+    fun observarTodos(): Flow<List<Usuario>>
 }
 
 @Dao

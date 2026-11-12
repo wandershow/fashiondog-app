@@ -22,6 +22,7 @@ class FashionDogApplication : Application() {
         // recria os avisos (caso o app tenha sido fechado à força, o que apaga os alarmes).
         container.escopo.launch {
             DadosIniciais.garantir(container.database)
+            container.sessao.carregar() // decide: primeiro acesso, login ou direto para a agenda
             container.reagendarAvisos()
         }
     }

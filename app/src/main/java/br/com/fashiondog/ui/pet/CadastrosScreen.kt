@@ -41,6 +41,7 @@ import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
 import br.com.fashiondog.ui.preview.DadosDePreview
 import br.com.fashiondog.ui.preview.PreviewNoTema
+import br.com.fashiondog.ui.theme.Amarelo
 import br.com.fashiondog.ui.theme.Tinta
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -123,7 +124,7 @@ fun CadastrosConteudo(
                 onClick = aoNovoCadastro,
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text("Novo cadastro") },
-                containerColor = MaterialTheme.colorScheme.primary,
+                containerColor = Amarelo,
                 contentColor = Tinta,
             )
         },

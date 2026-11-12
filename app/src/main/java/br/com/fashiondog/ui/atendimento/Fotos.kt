@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import br.com.fashiondog.data.local.entity.TipoFoto
+import br.com.fashiondog.ui.theme.Amarelo
 import br.com.fashiondog.ui.theme.Tinta
 import coil.compose.AsyncImage
 import java.io.File
@@ -84,8 +85,8 @@ fun FotoComAcoes(
                         Icon(
                             Icons.Filled.Close,
                             contentDescription = "Remover foto",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primary),
+                            tint = Tinta,
+                            modifier = Modifier.clip(RoundedCornerShape(50)).background(Amarelo),
                         )
                     }
                 }

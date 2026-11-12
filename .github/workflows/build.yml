@@ -32,11 +32,12 @@ jobs:
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Compilar APK de debug
-        run: ./gradlew assembleDebug
-
-      - name: Rodar testes unitários
-        run: ./gradlew testDebugUnitTest
+      # Um único comando para build e testes. --no-daemon: no CI a máquina é
+      # descartada no final, então não precisamos manter o Gradle vivo em
+      # segundo plano (e evita o processo ficar pendurado depois do build).
+      - name: Compilar APK e rodar testes unitários
+        timeout-minutes: 15
+        run: ./gradlew assembleDebug testDebugUnitTest --no-daemon
 
       # Guarda o relatório dos testes (útil para ver o que falhou).
       - name: Salvar relatório dos testes

@@ -19,8 +19,8 @@ Por isso: **perder a chave = não conseguir mais atualizar o app sem desinstalar
 
 | O quê | Onde |
 |---|---|
-| Arquivo da chave | `C:\Users\Wanderson\FashionDog-chave\fashiondog-release.jks` |
-| Senha e nome (alias) | `C:\Users\Wanderson\FashionDog-chave\LEIA-ME-senha-da-chave.txt` |
+| Arquivo da chave | `D:\AndroidDev\FashionDog-chave\fashiondog-release.jks` |
+| Senha e nome (alias) | `D:\AndroidDev\FashionDog-chave\LEIA-ME-senha-da-chave.txt` |
 | Configuração para o Gradle | `D:\Fashion Dog\keystore.properties` (aponta para o arquivo acima) |
 
 - Tipo: PKCS12, RSA 4096 bits, válida por ~27 anos. Alias: `fashiondog`.
@@ -72,7 +72,7 @@ claro, por exemplo `FashionDog-1.0.0.apk` (a pasta `dist/` do projeto está no `
 ### Conferir a assinatura de um APK
 
 ```bash
-%LOCALAPPDATA%\Android\Sdk\build-tools\36.0.0\apksigner.bat verify --print-certs FashionDog-1.0.0.apk
+D:\AndroidDev\Sdk\build-tools\36.0.0\apksigner.bat verify --print-certs FashionDog-1.0.0.apk
 ```
 
 Deve mostrar `CN=FashionDog, O=FashionDog Banho e Tosa, L=Rio Grande, ST=RS, C=BR`.
@@ -86,7 +86,7 @@ Deve mostrar `CN=FashionDog, O=FashionDog Banho e Tosa, L=Rio Grande, ST=RS, C=B
 ## Modelo do `keystore.properties`
 
 ```properties
-storeFile=C:/Users/Wanderson/FashionDog-chave/fashiondog-release.jks
+storeFile=D:/AndroidDev/FashionDog-chave/fashiondog-release.jks
 storePassword=<senha do gerenciador de senhas>
 keyAlias=fashiondog
 keyPassword=<a mesma senha>

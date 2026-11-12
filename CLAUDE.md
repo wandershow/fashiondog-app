@@ -17,7 +17,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - Testes unitários: `./gradlew testDebugUnitTest`
 - Produção: `gradlew.bat assembleRelease` (assinado se existir `keystore.properties`); homologação: `assembleHomologacao`
 - Build types: `debug` = `br.com.fashiondog.debug` "FashionDog (teste)"; `homologacao` = `.homolog`; `release` = `br.com.fashiondog`. Testar no celular SEMPRE com debug/homolog — nunca sobrescrever o app de produção da dona
-- Chave de produção: `C:\Users\Wanderson\FashionDog-chave\fashiondog-release.jks` (alias `fashiondog`); senha em `keystore.properties` (gitignored). NUNCA versionar nem exibir a senha. Nova versão: aumentar `versionCode` e `versionName`
+- Chave de produção: `D:\AndroidDev\FashionDog-chave\fashiondog-release.jks` (alias `fashiondog`); senha em `keystore.properties` (gitignored). NUNCA versionar nem exibir a senha. Nova versão: aumentar `versionCode` e `versionName`
 
 ## Estrutura (`app/src/main/java/br/com/fashiondog/`)
 
@@ -72,5 +72,6 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - Regra nova em `domain/` vem com teste unitário.
 - Toda tela tem duas partes: `XxxScreen` (pega o ViewModel) e `XxxConteudo` (só desenha, recebe estado + callbacks), com **`@Preview`** do Conteudo usando `ui/preview/DadosDePreview.kt` e `PreviewNoTema`.
 - Cada sprint é documentada em `docs/sprints/sprint-N-*.md` (objetivo, decisões, testes, roteiro manual).
-- Emulador local não roda (pouco disco/RAM): validar com build + testes e no celular físico.
+- Ambiente fora do C: (pouco espaço): tudo em `D:\AndroidDev` — `gradle` (GRADLE_USER_HOME), `Sdk` (ANDROID_HOME), `android-user` (ANDROID_USER_HOME: AVD, debug.keystore, adbkey), `studio` (caches do Studio via STUDIO_PROPERTIES). Ver `docs/producao/ambiente.md`. adb: `D:\AndroidDev\Sdk\platform-tools\adb.exe`
+- Emulador local não roda (RAM 8 GB): validar com build + testes e no celular físico.
 - Explicar as decisões em linguagem simples: o dono está aprendendo Android.

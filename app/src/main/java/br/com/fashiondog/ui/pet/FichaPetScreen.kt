@@ -1,6 +1,22 @@
 package br.com.fashiondog.ui.pet
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import br.com.fashiondog.data.local.model.AtendimentoComServico
+import br.com.fashiondog.data.repository.AtendimentoRepository
+import br.com.fashiondog.domain.Datas
+import br.com.fashiondog.domain.Dinheiro
+import br.com.fashiondog.ui.atendimento.rotulo
+import br.com.fashiondog.ui.componentes.TituloSecao
+import br.com.fashiondog.ui.theme.Tinta
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
@@ -32,24 +48,29 @@ import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class FichaPetEstado(
     val carregando: Boolean = true,
     val item: PetComTutor? = null,
+    /** O mais recente primeiro; o primeiro da lista é o "último banho". */
+    val historico: List<AtendimentoComServico> = emptyList(),
 )
 
 class FichaPetViewModel(
     private val repositorio: CadastroRepository,
+    atendimentos: AtendimentoRepository,
     argumentos: SavedStateHandle,
 ) : ViewModel() {
 
     val petId: Long = checkNotNull(argumentos.get<Long>("petId"))
 
-    val estado: StateFlow<FichaPetEstado> = repositorio.observarPet(petId)
-        .map { FichaPetEstado(carregando = false, item = it) }
+    val estado: StateFlow<FichaPetEstado> = combine(
+        repositorio.observarPet(petId),
+        atendimentos.observarHistorico(petId),
+    ) { item, historico -> FichaPetEstado(carregando = false, item = item, historico = historico) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), FichaPetEstado())
 
     suspend fun desativar() = repositorio.desativarPet(petId)
@@ -60,9 +81,11 @@ fun FichaPetScreen(
     aoVoltar: () -> Unit,
     aoEditar: (Long) -> Unit,
     aoAbrirTutor: (Long) -> Unit,
+    aoNovoAtendimento: (petId: Long) -> Unit,
+    aoAbrirAtendimento: (Long) -> Unit,
     podeAlterar: Boolean = true,
 ) {
-    val vm = viewModelDoApp { app, args -> FichaPetViewModel(app.cadastro, args) }
+    val vm = viewModelDoApp { app, args -> FichaPetViewModel(app.cadastro, app.atendimentos, args) }
     val estado by vm.estado.collectAsStateWithLifecycle()
     val escopo = rememberCoroutineScope()
     var menuAberto by remember { mutableStateOf(false) }
@@ -90,6 +113,17 @@ fun FichaPetScreen(
                 }
             }
         },
+        botaoFlutuante = {
+            if (estado.item?.pet?.ativo == true) {
+                ExtendedFloatingActionButton(
+                    onClick = { aoNovoAtendimento(vm.petId) },
+                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                    text = { Text("Registrar atendimento") },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Tinta,
+                )
+            }
+        },
     ) { espacamento ->
         val item = estado.item
         if (estado.carregando || item == null) {
@@ -111,6 +145,27 @@ fun FichaPetScreen(
                 Text(item.tutorNome, style = MaterialTheme.typography.titleMedium)
                 Text(Telefone.formatar(item.tutorTelefone), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+
+            UltimoBanho(estado.historico.firstOrNull(), aoAbrirAtendimento)
+
+            if (estado.historico.isNotEmpty()) {
+                TituloSecao("Histórico (${estado.historico.size})")
+                estado.historico.forEach { linha ->
+                    val atendimento = linha.atendimento
+                    ListItem(
+                        headlineContent = { Text(linha.servicoNome) },
+                        supportingContent = {
+                            Text("${Datas.formatarData(atendimento.data)} · ${atendimento.formaPagamento.rotulo}")
+                        },
+                        trailingContent = { Text(Dinheiro.formatar(atendimento.valorCentavos)) },
+                        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
+                        modifier = Modifier.clickable { aoAbrirAtendimento(atendimento.id) },
+                    )
+                    HorizontalDivider()
+                }
+            }
+            // espaço para o botão flutuante não cobrir o último item
+            Spacer(Modifier.height(72.dp))
         }
     }
 
@@ -128,5 +183,23 @@ fun FichaPetScreen(
             },
             aoCancelar = { confirmarDesativar = false },
         )
+    }
+}
+
+/** O destaque da ficha: quando foi o último banho, qual serviço e quanto custou. */
+@Composable
+private fun UltimoBanho(ultimo: AtendimentoComServico?, aoAbrir: (Long) -> Unit) {
+    if (ultimo == null) {
+        Cartao(destaque = true) {
+            Text("Último banho", style = MaterialTheme.typography.labelLarge)
+            Text("Nenhum atendimento registrado ainda.")
+        }
+        return
+    }
+    val atendimento = ultimo.atendimento
+    Cartao(destaque = true, modifier = Modifier.clickable { aoAbrir(atendimento.id) }) {
+        Text("Último banho · ${Datas.haQuantoTempo(atendimento.data)}", style = MaterialTheme.typography.labelLarge)
+        Text(Datas.formatarData(atendimento.data), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        Text("${ultimo.servicoNome} · ${Dinheiro.formatar(atendimento.valorCentavos)}", style = MaterialTheme.typography.titleMedium)
     }
 }

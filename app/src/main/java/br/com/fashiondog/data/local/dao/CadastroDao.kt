@@ -113,4 +113,10 @@ interface ServicoDao {
 
     @Query("SELECT * FROM servico WHERE ativo = 1 ORDER BY nome")
     fun observarAtivos(): Flow<List<Servico>>
+
+    @Query("SELECT * FROM servico WHERE id = :id")
+    suspend fun buscarPorId(id: Long): Servico?
+
+    @Query("SELECT COUNT(*) FROM servico")
+    suspend fun contar(): Int
 }

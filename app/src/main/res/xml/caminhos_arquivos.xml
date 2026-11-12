@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pastas que o FileProvider pode compartilhar: só a das capturas da câmera. -->
+<paths>
+    <cache-path name="camera" path="camera/" />
+</paths>

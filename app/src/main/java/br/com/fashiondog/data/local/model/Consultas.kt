@@ -1,6 +1,7 @@
 package br.com.fashiondog.data.local.model
 
 import androidx.room.Embedded
+import br.com.fashiondog.data.local.entity.Atendimento
 import br.com.fashiondog.data.local.entity.Pet
 import br.com.fashiondog.data.local.entity.Tutor
 
@@ -20,4 +21,17 @@ data class PetComTutor(
 data class TutorComQuantidade(
     @Embedded val tutor: Tutor,
     val quantidadePets: Int,
+)
+
+/** Um atendimento com o nome do serviço (para o histórico do pet). */
+data class AtendimentoComServico(
+    @Embedded val atendimento: Atendimento,
+    val servicoNome: String,
+)
+
+/** Um atendimento com serviço e pet (para a tela de detalhe). */
+data class AtendimentoDetalhado(
+    @Embedded val atendimento: Atendimento,
+    val servicoNome: String,
+    val petNome: String,
 )

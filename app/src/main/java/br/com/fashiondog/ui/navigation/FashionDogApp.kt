@@ -40,9 +40,9 @@ import br.com.fashiondog.ui.financeiro.FinanceiroScreen
 import br.com.fashiondog.ui.mais.AvisosScreen
 import br.com.fashiondog.ui.mais.BackupScreen
 import br.com.fashiondog.ui.mais.MaisScreen
+import br.com.fashiondog.ui.mais.MinhaContaScreen
 import br.com.fashiondog.ui.mais.OpcaoMais
 import br.com.fashiondog.ui.mais.ServicosScreen
-import br.com.fashiondog.ui.mais.TrocarSenhaScreen
 import br.com.fashiondog.ui.mais.UsuariosScreen
 import br.com.fashiondog.ui.pet.CadastrosScreen
 import br.com.fashiondog.ui.pet.FichaPetScreen
@@ -140,8 +140,8 @@ fun FashionDogApp(usuario: Usuario) {
                         OpcaoMais("Avisos", "Notificações e horário exato dos lembretes") {
                             navController.navigate(Rotas.AVISOS)
                         },
-                        OpcaoMais("Trocar minha senha", "Senha de ${usuario.login}") {
-                            navController.navigate(Rotas.TROCAR_SENHA)
+                        OpcaoMais("Minha conta", "Nome, login (${usuario.login}) e senha") {
+                            navController.navigate(Rotas.MINHA_CONTA)
                         },
                         OpcaoMais("Sair", "Voltar para a tela de login") {
                             escopo.launch { container.contas.sair() }
@@ -150,7 +150,7 @@ fun FashionDogApp(usuario: Usuario) {
                 )
             }
             composable(Rotas.AVISOS) { AvisosScreen(aoVoltar = { navController.popBackStack() }) }
-            composable(Rotas.TROCAR_SENHA) { TrocarSenhaScreen(aoVoltar = { navController.popBackStack() }) }
+            composable(Rotas.MINHA_CONTA) { MinhaContaScreen(aoVoltar = { navController.popBackStack() }) }
             if (perfil == Perfil.PROPRIETARIO) {
                 composable(Rotas.SERVICOS) { ServicosScreen(aoVoltar = { navController.popBackStack() }) }
                 composable(Rotas.USUARIOS) { UsuariosScreen(meuId = usuario.id, aoVoltar = { navController.popBackStack() }) }

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +42,9 @@ import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
+import java.time.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +52,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 val FormaPagamentoDespesa.rotulo: String
     get() = when (this) {
@@ -145,41 +148,77 @@ fun DespesaFormScreen(aoVoltar: () -> Unit) {
     val vm = viewModelDoApp { app, _ -> DespesaFormViewModel(app.financeiro, app.sessao) }
     val estado by vm.estado.collectAsStateWithLifecycle()
     val categorias by vm.categorias.collectAsStateWithLifecycle()
-    var novaCategoria by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(estado.salvo) { if (estado.salvo) aoVoltar() }
 
+    DespesaFormConteudo(
+        estado,
+        categorias,
+        AcoesDaDespesa(
+            aoVoltar = aoVoltar,
+            aoMudarDescricao = vm::mudarDescricao,
+            aoEscolherCategoria = vm::escolherCategoria,
+            aoCriarCategoria = vm::criarCategoria,
+            aoMudarValor = vm::mudarValor,
+            aoMudarDataCompra = vm::mudarDataCompra,
+            aoEscolherForma = vm::escolherForma,
+            aoMudarParcelas = vm::mudarParcelas,
+            aoMudarPrimeiroVencimento = vm::mudarPrimeiroVencimento,
+            aoSalvar = vm::salvar,
+        ),
+    )
+}
+
+/** O que a tela pode pedir ao ViewModel. Padrões vazios para o @Preview. */
+data class AcoesDaDespesa(
+    val aoVoltar: () -> Unit = {},
+    val aoMudarDescricao: (String) -> Unit = {},
+    val aoEscolherCategoria: (Categoria) -> Unit = {},
+    val aoCriarCategoria: (String) -> Unit = {},
+    val aoMudarValor: (Long) -> Unit = {},
+    val aoMudarDataCompra: (LocalDate) -> Unit = {},
+    val aoEscolherForma: (FormaPagamentoDespesa) -> Unit = {},
+    val aoMudarParcelas: (Int) -> Unit = {},
+    val aoMudarPrimeiroVencimento: (LocalDate) -> Unit = {},
+    val aoSalvar: () -> Unit = {},
+)
+
+@Composable
+fun DespesaFormConteudo(estado: DespesaFormEstado, categorias: List<Categoria>, acoes: AcoesDaDespesa) {
+    var novaCategoria by remember { mutableStateOf<String?>(null) }
+    val aoVoltar = acoes.aoVoltar
+
     Tela(titulo = "Nova despesa", aoVoltar = aoVoltar) { espacamento ->
         Formulario(espacamento) {
-            CampoTexto(estado.descricao, vm::mudarDescricao, "Descrição (ex.: shampoo 5 L)")
+            CampoTexto(estado.descricao, acoes.aoMudarDescricao, "Descrição (ex.: shampoo 5 L)")
             EscolhaUnica(
                 titulo = "Categoria",
                 opcoes = categorias,
                 selecionada = categorias.firstOrNull { it.id == estado.categoriaId },
-                aoEscolher = vm::escolherCategoria,
+                aoEscolher = acoes.aoEscolherCategoria,
                 rotuloDe = { it.nome },
             )
             TextButton(onClick = { novaCategoria = "" }) { Text("+ Nova categoria") }
 
-            CampoDinheiro(estado.valorCentavos, vm::mudarValor, "Valor total")
-            CampoData(estado.dataCompra, vm::mudarDataCompra, "Data da compra")
+            CampoDinheiro(estado.valorCentavos, acoes.aoMudarValor, "Valor total")
+            CampoData(estado.dataCompra, acoes.aoMudarDataCompra, "Data da compra")
 
             EscolhaUnica(
                 titulo = "Pagamento",
                 opcoes = FormaPagamentoDespesa.entries,
                 selecionada = estado.forma,
-                aoEscolher = vm::escolherForma,
+                aoEscolher = acoes.aoEscolherForma,
                 rotuloDe = { it.rotulo },
             )
 
             if (estado.forma == FormaPagamentoDespesa.BOLETO_PARCELADO) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Parcelas", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                    OutlinedButton(onClick = { vm.mudarParcelas(-1) }) { Text("−") }
+                    OutlinedButton(onClick = { acoes.aoMudarParcelas(-1) }) { Text("−") }
                     Text("${estado.numParcelas}x", style = MaterialTheme.typography.titleLarge)
-                    OutlinedButton(onClick = { vm.mudarParcelas(1) }) { Text("+") }
+                    OutlinedButton(onClick = { acoes.aoMudarParcelas(1) }) { Text("+") }
                 }
-                CampoData(estado.primeiroVencimento, vm::mudarPrimeiroVencimento, "1º vencimento")
+                CampoData(estado.primeiroVencimento, acoes.aoMudarPrimeiroVencimento, "1º vencimento")
             }
 
             PreviaDasParcelas(estado)
@@ -187,7 +226,7 @@ fun DespesaFormScreen(aoVoltar: () -> Unit) {
             estado.erro?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             BotaoPrincipal(
                 texto = if (estado.salvando) "Salvando..." else "Salvar despesa",
-                aoClicar = vm::salvar,
+                aoClicar = acoes.aoSalvar,
                 habilitado = !estado.salvando,
             )
         }
@@ -202,7 +241,7 @@ fun DespesaFormScreen(aoVoltar: () -> Unit) {
             },
             confirmButton = {
                 TextButton(onClick = {
-                    vm.criarCategoria(nome)
+                    acoes.aoCriarCategoria(nome)
                     novaCategoria = null
                 }, enabled = nome.isNotBlank()) { Text("Criar") }
             },
@@ -234,4 +273,30 @@ private fun PreviaDasParcelas(estado: DespesaFormEstado) {
             )
         }
     }
+}
+
+@Preview(showBackground = true, heightDp = 1100, name = "Boleto em 3x")
+@Composable
+private fun PreviewDespesaBoleto() = PreviewNoTema {
+    DespesaFormConteudo(
+        DespesaFormEstado(
+            descricao = "Secador profissional",
+            categoriaId = 4,
+            valorCentavos = 90_000,
+            forma = FormaPagamentoDespesa.BOLETO_PARCELADO,
+            numParcelas = 3,
+        ),
+        DadosDePreview.categorias,
+        AcoesDaDespesa(),
+    )
+}
+
+@Preview(showBackground = true, name = "Compra à vista")
+@Composable
+private fun PreviewDespesaAVista() = PreviewNoTema {
+    DespesaFormConteudo(
+        DespesaFormEstado(descricao = "Shampoo 5 L", categoriaId = 1, valorCentavos = 15_990),
+        DadosDePreview.categorias,
+        AcoesDaDespesa(),
+    )
 }

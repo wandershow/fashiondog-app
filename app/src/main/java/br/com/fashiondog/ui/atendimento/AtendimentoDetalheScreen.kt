@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.SavedStateHandle
@@ -28,12 +29,14 @@ import br.com.fashiondog.data.local.model.AtendimentoDetalhado
 import br.com.fashiondog.data.repository.AtendimentoRepository
 import br.com.fashiondog.domain.Datas
 import br.com.fashiondog.domain.Dinheiro
-import br.com.fashiondog.ui.componentes.Cartao
 import br.com.fashiondog.ui.componentes.Carregando
+import br.com.fashiondog.ui.componentes.Cartao
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -64,14 +67,25 @@ fun AtendimentoDetalheScreen(
 ) {
     val vm = viewModelDoApp { app, args -> AtendimentoDetalheViewModel(app.atendimentos, args) }
     val estado by vm.estado.collectAsStateWithLifecycle()
+    AtendimentoDetalheConteudo(estado, aoVoltar, aoEditar, podeEditar)
+}
+
+@Composable
+fun AtendimentoDetalheConteudo(
+    estado: AtendimentoDetalheEstado,
+    aoVoltar: () -> Unit,
+    aoEditar: (Long) -> Unit,
+    podeEditar: Boolean = true,
+) {
     var fotoAmpliada by remember { mutableStateOf<Foto?>(null) }
 
     Tela(
         titulo = estado.detalhe?.petNome ?: "Atendimento",
         aoVoltar = aoVoltar,
         acoes = {
-            if (podeEditar && estado.detalhe != null) {
-                IconButton(onClick = { aoEditar(vm.atendimentoId) }) {
+            val detalhe = estado.detalhe
+            if (podeEditar && detalhe != null) {
+                IconButton(onClick = { aoEditar(detalhe.atendimento.id) }) {
                     Icon(Icons.Filled.Edit, contentDescription = "Editar atendimento")
                 }
             }
@@ -116,4 +130,18 @@ fun AtendimentoDetalheScreen(
             FotoMiniatura(foto.caminho, "Foto ${foto.tipo.rotulo} ampliada") { fotoAmpliada = null }
         }
     }
+}
+
+@Preview(showBackground = true, name = "Detalhe do atendimento")
+@Composable
+private fun PreviewAtendimentoDetalhe() = PreviewNoTema {
+    val linha = DadosDePreview.historico.first()
+    AtendimentoDetalheConteudo(
+        AtendimentoDetalheEstado(
+            carregando = false,
+            detalhe = AtendimentoDetalhado(linha.atendimento.copy(observacoes = "Unhas cortadas"), linha.servicoNome, "Bóris"),
+        ),
+        aoVoltar = {},
+        aoEditar = {},
+    )
 }

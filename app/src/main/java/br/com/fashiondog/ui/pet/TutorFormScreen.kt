@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -16,12 +17,13 @@ import br.com.fashiondog.domain.Telefone
 import br.com.fashiondog.domain.ValidacaoCadastro
 import br.com.fashiondog.ui.componentes.BotaoPrincipal
 import br.com.fashiondog.ui.componentes.CampoTexto
-import br.com.fashiondog.ui.componentes.EscolhaUnica
 import br.com.fashiondog.ui.componentes.Carregando
+import br.com.fashiondog.ui.componentes.EscolhaUnica
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -111,7 +113,27 @@ fun TutorFormScreen(aoVoltar: () -> Unit, aoSalvar: (tutorId: Long, ehNovo: Bool
     LaunchedEffect(estado.salvoComId) {
         estado.salvoComId?.let { aoSalvar(it, estado.ehNovo) }
     }
+    TutorFormConteudo(
+        estado = estado,
+        aoVoltar = aoVoltar,
+        aoMudarNome = vm::mudarNome,
+        aoMudarTelefone = vm::mudarTelefone,
+        aoMudarObservacoes = vm::mudarObservacoes,
+        aoMudarPet = vm::mudarPet,
+        aoSalvar = vm::salvar,
+    )
+}
 
+@Composable
+fun TutorFormConteudo(
+    estado: TutorFormEstado,
+    aoVoltar: () -> Unit,
+    aoMudarNome: (String) -> Unit,
+    aoMudarTelefone: (String) -> Unit,
+    aoMudarObservacoes: (String) -> Unit,
+    aoMudarPet: (CamposPet) -> Unit,
+    aoSalvar: () -> Unit,
+) {
     Tela(titulo = if (estado.ehNovo) "Novo cadastro" else "Editar tutor", aoVoltar = aoVoltar) { espacamento ->
         if (estado.carregando) {
             Carregando()
@@ -121,33 +143,33 @@ fun TutorFormScreen(aoVoltar: () -> Unit, aoSalvar: (tutorId: Long, ehNovo: Bool
             TituloSecao("Tutor")
             CampoTexto(
                 valor = estado.nome,
-                aoMudar = vm::mudarNome,
+                aoMudar = aoMudarNome,
                 rotulo = "Nome *",
                 erro = estado.erroNome,
                 maiusculas = KeyboardCapitalization.Words,
             )
             CampoTexto(
                 valor = estado.telefone,
-                aoMudar = vm::mudarTelefone,
+                aoMudar = aoMudarTelefone,
                 rotulo = "Telefone com DDD *",
                 erro = estado.erroTelefone,
                 teclado = KeyboardType.Phone,
             )
             CampoTexto(
                 valor = estado.observacoes,
-                aoMudar = vm::mudarObservacoes,
+                aoMudar = aoMudarObservacoes,
                 rotulo = "Observações",
                 linhas = 2,
             )
 
             if (estado.ehNovo) {
                 TituloSecao("Primeiro pet (opcional)")
-                CamposDoPet(estado.pet, vm::mudarPet)
+                CamposDoPet(estado.pet, aoMudarPet)
             }
 
             BotaoPrincipal(
                 texto = if (estado.salvando) "Salvando..." else "Salvar",
-                aoClicar = vm::salvar,
+                aoClicar = aoSalvar,
                 habilitado = !estado.salvando,
             )
         }
@@ -211,4 +233,20 @@ fun CamposDoPet(campos: CamposPet, aoMudar: (CamposPet) -> Unit) {
         rotulo = "Observações (alergias, comportamento...)",
         linhas = 2,
     )
+}
+
+@Preview(showBackground = true, name = "Novo cadastro (tutor + pet)")
+@Composable
+private fun PreviewNovoCadastro() = PreviewNoTema {
+    TutorFormConteudo(
+        TutorFormEstado(nome = "Maria Souza", telefone = "53", erroTelefone = "Informe o telefone com DDD (10 ou 11 dígitos)",
+            pet = CamposPet(nome = "Bóris", porte = "Pequeno")),
+        {}, {}, {}, {}, {}, {},
+    )
+}
+
+@Preview(showBackground = true, name = "Editar tutor")
+@Composable
+private fun PreviewEditarTutor() = PreviewNoTema {
+    TutorFormConteudo(TutorFormEstado(ehNovo = false, nome = "Maria Souza", telefone = "(53) 99999-8888"), {}, {}, {}, {}, {}, {})
 }

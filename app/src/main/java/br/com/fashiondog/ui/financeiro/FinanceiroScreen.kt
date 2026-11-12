@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,8 +52,11 @@ import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import br.com.fashiondog.ui.theme.Erro
 import br.com.fashiondog.ui.theme.Tinta
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -61,7 +65,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 data class FinanceiroEstado(
     val periodo: Periodo = Periodo.de(TipoPeriodo.MES, LocalDate.now()),
@@ -116,6 +119,27 @@ class FinanceiroViewModel(private val repositorio: FinanceiroRepository) : ViewM
 fun FinanceiroScreen(aoNovaDespesa: () -> Unit) {
     val vm = viewModelDoApp { app, _ -> FinanceiroViewModel(app.financeiro) }
     val estado by vm.estado.collectAsStateWithLifecycle()
+    FinanceiroConteudo(
+        estado = estado,
+        aoEscolherTipo = vm::escolherTipo,
+        aoAnterior = vm::anterior,
+        aoProximo = vm::proximo,
+        aoMarcarPaga = vm::marcarPaga,
+        aoExcluirDespesa = vm::excluirDespesa,
+        aoNovaDespesa = aoNovaDespesa,
+    )
+}
+
+@Composable
+fun FinanceiroConteudo(
+    estado: FinanceiroEstado,
+    aoEscolherTipo: (TipoPeriodo) -> Unit,
+    aoAnterior: () -> Unit,
+    aoProximo: () -> Unit,
+    aoMarcarPaga: (parcelaId: Long, paga: Boolean) -> Unit,
+    aoExcluirDespesa: (despesaId: Long) -> Unit,
+    aoNovaDespesa: () -> Unit,
+) {
     var escolhida by remember { mutableStateOf<ParcelaDetalhada?>(null) }
     var confirmarExclusao by remember { mutableStateOf<ParcelaDetalhada?>(null) }
 
@@ -135,11 +159,11 @@ fun FinanceiroScreen(aoNovaDespesa: () -> Unit) {
             EscolhaUnica(
                 opcoes = TipoPeriodo.entries,
                 selecionada = estado.periodo.tipo,
-                aoEscolher = vm::escolherTipo,
+                aoEscolher = aoEscolherTipo,
                 rotuloDe = { it.rotulo },
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = vm::anterior) {
+                IconButton(onClick = aoAnterior) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Período anterior")
                 }
                 Text(
@@ -148,7 +172,7 @@ fun FinanceiroScreen(aoNovaDespesa: () -> Unit) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = vm::proximo) {
+                IconButton(onClick = aoProximo) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Próximo período")
                 }
             }
@@ -202,7 +226,7 @@ fun FinanceiroScreen(aoNovaDespesa: () -> Unit) {
                 // Compra à vista já nasce paga e não tem o que desfazer.
                 if (item.formaPagamento == FormaPagamentoDespesa.BOLETO_PARCELADO) {
                     TextButton(onClick = {
-                        vm.marcarPaga(parcela.id, !paga)
+                        aoMarcarPaga(parcela.id, !paga)
                         escolhida = null
                     }) { Text(if (paga) "Marcar como não paga" else "Marcar como paga") }
                 }
@@ -226,7 +250,7 @@ fun FinanceiroScreen(aoNovaDespesa: () -> Unit) {
             else "A despesa será apagada do balanço.",
             textoConfirmar = "Excluir",
             aoConfirmar = {
-                vm.excluirDespesa(item.parcela.despesaId)
+                aoExcluirDespesa(item.parcela.despesaId)
                 confirmarExclusao = null
             },
             aoCancelar = { confirmarExclusao = null },
@@ -283,4 +307,32 @@ private fun LinhaParcela(item: ParcelaDetalhada, aoTocar: () -> Unit) {
         modifier = Modifier.clickable(onClick = aoTocar),
     )
     HorizontalDivider()
+}
+
+@Preview(showBackground = true, heightDp = 1000, name = "Balanço do mês")
+@Composable
+private fun PreviewFinanceiro() = PreviewNoTema {
+    FinanceiroConteudo(
+        estado = FinanceiroEstado(
+            balanco = Balanco(receitaCentavos = 412_500, despesaCentavos = 165_990, quantidadeAtendimentos = 58),
+            porCategoria = listOf(
+                TotalPorCategoria("Aluguel", 120_000),
+                TotalPorCategoria("Equipamentos", 30_000),
+                TotalPorCategoria("Produtos de banho", 15_990),
+            ),
+            parcelasDoPeriodo = DadosDePreview.parcelas,
+            aPagar = DadosDePreview.parcelas.filter { it.parcela.status == StatusParcela.PENDENTE },
+        ),
+        aoEscolherTipo = {}, aoAnterior = {}, aoProximo = {}, aoMarcarPaga = { _, _ -> },
+        aoExcluirDespesa = {}, aoNovaDespesa = {},
+    )
+}
+
+@Preview(showBackground = true, name = "Saldo negativo")
+@Composable
+private fun PreviewSaldoNegativo() = PreviewNoTema {
+    FinanceiroConteudo(
+        FinanceiroEstado(balanco = Balanco(receitaCentavos = 50_000, despesaCentavos = 120_000, quantidadeAtendimentos = 7)),
+        {}, {}, {}, { _, _ -> }, {}, {},
+    )
 }

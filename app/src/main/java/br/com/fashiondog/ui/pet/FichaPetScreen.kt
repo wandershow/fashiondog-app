@@ -3,27 +3,18 @@ package br.com.fashiondog.ui.pet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import br.com.fashiondog.data.local.model.AtendimentoComServico
-import br.com.fashiondog.data.repository.AtendimentoRepository
-import br.com.fashiondog.domain.Datas
-import br.com.fashiondog.domain.Dinheiro
-import br.com.fashiondog.ui.atendimento.rotulo
-import br.com.fashiondog.ui.componentes.TituloSecao
-import br.com.fashiondog.ui.theme.Tinta
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,19 +24,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import br.com.fashiondog.data.local.model.AtendimentoComServico
 import br.com.fashiondog.data.local.model.PetComTutor
+import br.com.fashiondog.data.repository.AtendimentoRepository
 import br.com.fashiondog.data.repository.CadastroRepository
+import br.com.fashiondog.domain.Datas
+import br.com.fashiondog.domain.Dinheiro
 import br.com.fashiondog.domain.Telefone
-import br.com.fashiondog.ui.componentes.Cartao
+import br.com.fashiondog.ui.atendimento.rotulo
 import br.com.fashiondog.ui.componentes.Carregando
+import br.com.fashiondog.ui.componentes.Cartao
 import br.com.fashiondog.ui.componentes.DialogoConfirmacao
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
+import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
+import br.com.fashiondog.ui.theme.Tinta
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -88,6 +91,34 @@ fun FichaPetScreen(
     val vm = viewModelDoApp { app, args -> FichaPetViewModel(app.cadastro, app.atendimentos, args) }
     val estado by vm.estado.collectAsStateWithLifecycle()
     val escopo = rememberCoroutineScope()
+    FichaPetConteudo(
+        estado = estado,
+        aoVoltar = aoVoltar,
+        aoEditar = aoEditar,
+        aoAbrirTutor = aoAbrirTutor,
+        aoNovoAtendimento = aoNovoAtendimento,
+        aoAbrirAtendimento = aoAbrirAtendimento,
+        aoDesativar = {
+            escopo.launch {
+                vm.desativar()
+                aoVoltar()
+            }
+        },
+        podeAlterar = podeAlterar,
+    )
+}
+
+@Composable
+fun FichaPetConteudo(
+    estado: FichaPetEstado,
+    aoVoltar: () -> Unit,
+    aoEditar: (Long) -> Unit,
+    aoAbrirTutor: (Long) -> Unit,
+    aoNovoAtendimento: (petId: Long) -> Unit,
+    aoAbrirAtendimento: (Long) -> Unit,
+    aoDesativar: () -> Unit,
+    podeAlterar: Boolean = true,
+) {
     var menuAberto by remember { mutableStateOf(false) }
     var confirmarDesativar by remember { mutableStateOf(false) }
 
@@ -96,7 +127,7 @@ fun FichaPetScreen(
         aoVoltar = aoVoltar,
         acoes = {
             if (podeAlterar && estado.item != null) {
-                IconButton(onClick = { aoEditar(vm.petId) }) {
+                IconButton(onClick = { estado.item?.let { aoEditar(it.pet.id) } }) {
                     Icon(Icons.Filled.Edit, contentDescription = "Editar pet")
                 }
                 IconButton(onClick = { menuAberto = true }) {
@@ -116,7 +147,7 @@ fun FichaPetScreen(
         botaoFlutuante = {
             if (estado.item?.pet?.ativo == true) {
                 ExtendedFloatingActionButton(
-                    onClick = { aoNovoAtendimento(vm.petId) },
+                    onClick = { estado.item?.let { aoNovoAtendimento(it.pet.id) } },
                     icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                     text = { Text("Registrar atendimento") },
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -176,10 +207,7 @@ fun FichaPetScreen(
             textoConfirmar = "Desativar",
             aoConfirmar = {
                 confirmarDesativar = false
-                escopo.launch {
-                    vm.desativar()
-                    aoVoltar()
-                }
+                aoDesativar()
             },
             aoCancelar = { confirmarDesativar = false },
         )
@@ -202,4 +230,19 @@ private fun UltimoBanho(ultimo: AtendimentoComServico?, aoAbrir: (Long) -> Unit)
         Text(Datas.formatarData(atendimento.data), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         Text("${ultimo.servicoNome} · ${Dinheiro.formatar(atendimento.valorCentavos)}", style = MaterialTheme.typography.titleMedium)
     }
+}
+
+@Preview(showBackground = true, name = "Ficha com histórico")
+@Composable
+private fun PreviewFichaPet() = PreviewNoTema {
+    FichaPetConteudo(
+        FichaPetEstado(carregando = false, item = DadosDePreview.petsComTutor.first(), historico = DadosDePreview.historico),
+        {}, {}, {}, {}, {}, {},
+    )
+}
+
+@Preview(showBackground = true, name = "Ficha sem atendimentos")
+@Composable
+private fun PreviewFichaPetVazia() = PreviewNoTema {
+    FichaPetConteudo(FichaPetEstado(carregando = false, item = DadosDePreview.petsComTutor[1]), {}, {}, {}, {}, {}, {})
 }

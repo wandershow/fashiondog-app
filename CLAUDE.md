@@ -65,6 +65,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 
 - Branch `main` sempre funcionando; cada tarefa em `feature/...`; commits `feat:`, `fix:`, `test:`, `docs:`.
 - Regra nova em `domain/` vem com teste unitário.
+- Toda tela tem duas partes: `XxxScreen` (pega o ViewModel) e `XxxConteudo` (só desenha, recebe estado + callbacks), com **`@Preview`** do Conteudo usando `ui/preview/DadosDePreview.kt` e `PreviewNoTema`.
 - Cada sprint é documentada em `docs/sprints/sprint-N-*.md` (objetivo, decisões, testes, roteiro manual).
 - Emulador local não roda (pouco disco/RAM): validar com build + testes e no celular físico.
 - Explicar as decisões em linguagem simples: o dono está aprendendo Android.

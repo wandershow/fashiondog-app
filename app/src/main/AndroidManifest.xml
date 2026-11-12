@@ -2,6 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Avisos da agenda e das parcelas -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Alarme no horário exato: Android 12 pede SCHEDULE_EXACT_ALARM; do 13 em diante,
+         apps de agenda podem usar USE_EXACT_ALARM, que já vem liberada na instalação. -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <application
         android:name=".FashionDogApplication"
         android:allowBackup="true"
@@ -24,6 +34,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".notifications.ReceptorDeAvisos"
+            android:exported="false" />
+
+        <!-- Recria os avisos quando o celular liga, o app é atualizado ou o relógio muda. -->
+        <receiver
+            android:name=".notifications.ReceptorDeInicializacao"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
         <!-- Dá ao app de câmera permissão para gravar a foto num arquivo nosso. -->
         <provider

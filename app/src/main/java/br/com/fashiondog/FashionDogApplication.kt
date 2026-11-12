@@ -17,7 +17,12 @@ class FashionDogApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
-        // Garante os serviços (Banho, Banho e tosa) sem travar a abertura do app.
-        container.escopo.launch { DadosIniciais.garantir(container.database) }
+        container.avisos.criarCanais()
+        // Sem travar a abertura do app: garante os serviços (Banho, Banho e tosa) e
+        // recria os avisos (caso o app tenha sido fechado à força, o que apaga os alarmes).
+        container.escopo.launch {
+            DadosIniciais.garantir(container.database)
+            container.reagendarAvisos()
+        }
     }
 }

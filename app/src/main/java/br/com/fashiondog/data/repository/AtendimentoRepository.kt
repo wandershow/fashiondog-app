@@ -6,14 +6,17 @@ import br.com.fashiondog.data.local.AppDatabase
 import br.com.fashiondog.data.local.entity.Atendimento
 import br.com.fashiondog.data.local.entity.Foto
 import br.com.fashiondog.data.local.entity.Servico
+import br.com.fashiondog.data.local.entity.StatusAgendamento
 import br.com.fashiondog.data.local.entity.TipoFoto
 import br.com.fashiondog.data.local.model.AtendimentoComServico
 import br.com.fashiondog.data.local.model.AtendimentoDetalhado
+import br.com.fashiondog.notifications.Avisos
 import kotlinx.coroutines.flow.Flow
 
 class AtendimentoRepository(
     private val db: AppDatabase,
     private val fotos: ArmazenamentoDeFotos,
+    private val avisos: Avisos,
 ) {
     private val dao = db.atendimentoDao()
     private val servicoDao = db.servicoDao()
@@ -43,8 +46,13 @@ class AtendimentoRepository(
         val arquivosParaApagar = mutableListOf<String>()
 
         val id = db.withTransaction {
-            val id = if (atendimento.id == 0L) dao.inserir(atendimento)
-            else atendimento.id.also { dao.atualizar(atendimento) }
+            val novo = atendimento.id == 0L
+            val id = if (novo) dao.inserir(atendimento) else atendimento.id.also { dao.atualizar(atendimento) }
+
+            // Veio da agenda: o agendamento vira "concluído" junto com o atendimento.
+            if (novo && atendimento.agendamentoId != null) {
+                db.agendamentoDao().mudarStatus(atendimento.agendamentoId, StatusAgendamento.CONCLUIDO)
+            }
 
             val atuais = dao.fotosDoAtendimento(id)
             TipoFoto.entries.forEach { tipo ->
@@ -63,6 +71,7 @@ class AtendimentoRepository(
 
         // Só apaga os arquivos depois que o banco confirmou a gravação.
         arquivosParaApagar.forEach(fotos::excluir)
+        atendimento.agendamentoId?.let(avisos::cancelarAgendamento)
         return id
     }
 }

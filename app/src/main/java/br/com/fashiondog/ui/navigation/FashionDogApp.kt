@@ -26,8 +26,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import br.com.fashiondog.R
+import br.com.fashiondog.ui.agenda.AgendaScreen
+import br.com.fashiondog.ui.agenda.AgendamentoFormScreen
 import br.com.fashiondog.ui.atendimento.AtendimentoDetalheScreen
 import br.com.fashiondog.ui.atendimento.AtendimentoFormScreen
+import br.com.fashiondog.ui.mais.AvisosScreen
 import br.com.fashiondog.ui.mais.MaisScreen
 import br.com.fashiondog.ui.mais.OpcaoMais
 import br.com.fashiondog.ui.mais.ServicosScreen
@@ -83,7 +86,19 @@ fun FashionDogApp() {
             startDestination = Aba.AGENDA.rota,
             modifier = Modifier.padding(espacamento).consumeWindowInsets(espacamento),
         ) {
-            composable(Aba.AGENDA.rota) { TelaEmConstrucao("Agenda") }
+            composable(Aba.AGENDA.rota) {
+                AgendaScreen(
+                    aoNovoAgendamento = { navController.navigate(Rotas.novoAgendamento(it)) },
+                    aoEditar = { navController.navigate(Rotas.editarAgendamento(it)) },
+                    aoConcluir = {
+                        val ag = it.agendamento
+                        navController.navigate(Rotas.novoAtendimento(ag.petId, agendamentoId = ag.id, servicoId = ag.servicoId))
+                    },
+                )
+            }
+            composable(Rotas.AGENDAMENTO_FORM, arguments = listOf(idArg("agendamentoId"), idArg("dia"))) {
+                AgendamentoFormScreen(aoVoltar = { navController.popBackStack() })
+            }
             composable(Aba.FINANCEIRO.rota) { TelaEmConstrucao("Financeiro") }
             composable(Aba.MAIS.rota) {
                 MaisScreen(
@@ -91,10 +106,14 @@ fun FashionDogApp() {
                         OpcaoMais("Serviços e preços", "Preço sugerido de cada serviço") {
                             navController.navigate(Rotas.SERVICOS)
                         },
+                        OpcaoMais("Avisos", "Notificações e horário exato dos lembretes") {
+                            navController.navigate(Rotas.AVISOS)
+                        },
                     ),
                 )
             }
             composable(Rotas.SERVICOS) { ServicosScreen(aoVoltar = { navController.popBackStack() }) }
+            composable(Rotas.AVISOS) { AvisosScreen(aoVoltar = { navController.popBackStack() }) }
 
             cadastros(navController)
             atendimentos(navController)

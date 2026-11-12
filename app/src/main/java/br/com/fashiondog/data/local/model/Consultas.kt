@@ -1,6 +1,7 @@
 package br.com.fashiondog.data.local.model
 
 import androidx.room.Embedded
+import br.com.fashiondog.data.local.entity.Agendamento
 import br.com.fashiondog.data.local.entity.Atendimento
 import br.com.fashiondog.data.local.entity.Pet
 import br.com.fashiondog.data.local.entity.Tutor
@@ -34,4 +35,13 @@ data class AtendimentoDetalhado(
     @Embedded val atendimento: Atendimento,
     val servicoNome: String,
     val petNome: String,
+)
+
+/** Um agendamento com pet, tutor e serviço (para a agenda e os avisos). */
+data class AgendamentoDetalhado(
+    @Embedded val agendamento: Agendamento,
+    val petNome: String,
+    val tutorNome: String,
+    val tutorTelefone: String,
+    val servicoNome: String,
 )

@@ -172,7 +172,7 @@ fun AgendaConteudo(
                 onClick = { aoNovoAgendamento(estado.dia) },
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
                 text = { Text("Agendar") },
-                containerColor = MaterialTheme.colorScheme.primary,
+                containerColor = Amarelo,
                 contentColor = Tinta,
             )
         },

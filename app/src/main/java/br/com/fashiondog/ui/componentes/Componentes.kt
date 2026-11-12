@@ -45,6 +45,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import br.com.fashiondog.ui.theme.Amarelo
+import br.com.fashiondog.ui.theme.Branco
 import br.com.fashiondog.ui.theme.Tinta
 
 /** Estrutura padrão das telas: barra de título (com voltar, se houver) + conteúdo. */
@@ -146,8 +148,8 @@ fun <T> EscolhaUnica(
                     onClick = { aoEscolher(opcao) },
                     label = { Text(rotuloDe(opcao)) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedContainerColor = Amarelo,
+                        selectedLabelColor = Tinta,
                     ),
                 )
             }
@@ -166,7 +168,8 @@ fun BotaoPrincipal(
     Button(
         onClick = aoClicar,
         enabled = habilitado,
-        colors = ButtonDefaults.buttonColors(containerColor = Tinta),
+        // Texto branco explícito: o padrão do tema (onPrimary) é tinta, e ficaria preto no preto.
+        colors = ButtonDefaults.buttonColors(containerColor = Tinta, contentColor = Branco),
         modifier = modifier.fillMaxWidth(),
     ) {
         Text(texto, modifier = Modifier.padding(vertical = 4.dp))

@@ -17,4 +17,16 @@ object Rotas {
 
     const val PET = "pet/{petId}"
     fun pet(petId: Long) = "pet/$petId"
+
+    const val ATENDIMENTO_FORM =
+        "atendimento/form?petId={petId}&atendimentoId={atendimentoId}&agendamentoId={agendamentoId}&servicoId={servicoId}"
+    fun novoAtendimento(petId: Long, agendamentoId: Long? = null, servicoId: Long? = null) =
+        "atendimento/form?petId=$petId&atendimentoId=-1&agendamentoId=${agendamentoId ?: -1}&servicoId=${servicoId ?: -1}"
+    fun editarAtendimento(atendimentoId: Long) =
+        "atendimento/form?petId=-1&atendimentoId=$atendimentoId&agendamentoId=-1&servicoId=-1"
+
+    const val ATENDIMENTO = "atendimento/{atendimentoId}"
+    fun atendimento(atendimentoId: Long) = "atendimento/$atendimentoId"
+
+    const val SERVICOS = "mais/servicos"
 }

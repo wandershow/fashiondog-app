@@ -26,6 +26,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import br.com.fashiondog.R
+import br.com.fashiondog.ui.atendimento.AtendimentoDetalheScreen
+import br.com.fashiondog.ui.atendimento.AtendimentoFormScreen
+import br.com.fashiondog.ui.mais.MaisScreen
+import br.com.fashiondog.ui.mais.OpcaoMais
+import br.com.fashiondog.ui.mais.ServicosScreen
 import br.com.fashiondog.ui.pet.CadastrosScreen
 import br.com.fashiondog.ui.pet.FichaPetScreen
 import br.com.fashiondog.ui.pet.PetFormScreen
@@ -80,9 +85,19 @@ fun FashionDogApp() {
         ) {
             composable(Aba.AGENDA.rota) { TelaEmConstrucao("Agenda") }
             composable(Aba.FINANCEIRO.rota) { TelaEmConstrucao("Financeiro") }
-            composable(Aba.MAIS.rota) { TelaEmConstrucao("Mais") }
+            composable(Aba.MAIS.rota) {
+                MaisScreen(
+                    opcoes = listOf(
+                        OpcaoMais("Serviços e preços", "Preço sugerido de cada serviço") {
+                            navController.navigate(Rotas.SERVICOS)
+                        },
+                    ),
+                )
+            }
+            composable(Rotas.SERVICOS) { ServicosScreen(aoVoltar = { navController.popBackStack() }) }
 
             cadastros(navController)
+            atendimentos(navController)
         }
     }
 }
@@ -128,6 +143,27 @@ private fun androidx.navigation.NavGraphBuilder.cadastros(nav: NavHostController
             aoVoltar = { nav.popBackStack() },
             aoEditar = { nav.navigate(Rotas.editarPet(it)) },
             aoAbrirTutor = { nav.navigate(Rotas.tutor(it)) },
+            aoNovoAtendimento = { nav.navigate(Rotas.novoAtendimento(it)) },
+            aoAbrirAtendimento = { nav.navigate(Rotas.atendimento(it)) },
+        )
+    }
+}
+
+/** Telas da Sprint 2: atendimentos. */
+private fun androidx.navigation.NavGraphBuilder.atendimentos(nav: NavHostController) {
+    composable(
+        Rotas.ATENDIMENTO_FORM,
+        arguments = listOf(idArg("petId"), idArg("atendimentoId"), idArg("agendamentoId"), idArg("servicoId")),
+    ) {
+        AtendimentoFormScreen(
+            aoVoltar = { nav.popBackStack() },
+            aoSalvar = { nav.popBackStack() },
+        )
+    }
+    composable(Rotas.ATENDIMENTO, arguments = listOf(idArg("atendimentoId"))) {
+        AtendimentoDetalheScreen(
+            aoVoltar = { nav.popBackStack() },
+            aoEditar = { nav.navigate(Rotas.editarAtendimento(it)) },
         )
     }
 }

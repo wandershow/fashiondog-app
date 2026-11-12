@@ -1,8 +1,13 @@
 package br.com.fashiondog.di
 
 import android.content.Context
+import br.com.fashiondog.data.fotos.ArmazenamentoDeFotos
 import br.com.fashiondog.data.local.AppDatabase
+import br.com.fashiondog.data.repository.AtendimentoRepository
 import br.com.fashiondog.data.repository.CadastroRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * "Injeção de dependência manual": um objeto que cria e guarda as peças do app
@@ -15,7 +20,16 @@ class AppContainer(context: Context) {
 
     private val appContext = context.applicationContext
 
+    /** Tarefas que não pertencem a uma tela (ex.: preparar dados iniciais). */
+    val escopo = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     val database: AppDatabase by lazy { AppDatabase.obter(appContext) }
 
+    val fotos: ArmazenamentoDeFotos by lazy { ArmazenamentoDeFotos(appContext) }
+
+    val sessao: Sessao by lazy { Sessao(database) }
+
     val cadastro: CadastroRepository by lazy { CadastroRepository(database) }
+
+    val atendimentos: AtendimentoRepository by lazy { AtendimentoRepository(database, fotos) }
 }

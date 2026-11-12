@@ -16,7 +16,7 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 | Cadastro | Tutores e pets, busca sem acento, ligar/WhatsApp, desativar sem perder histórico | ✅ Sprint 1 |
 | Atendimentos | Banho ou banho e tosa, valor cobrado, pagamento e fotos antes/depois (câmera ou galeria, comprimidas) | ✅ Sprint 2 |
 | Ficha do pet | Último banho em destaque e histórico completo | ✅ Sprint 2 |
-| Agenda | Agendamentos com aviso; concluir gera o atendimento | 🔜 Sprint 3 |
+| Agenda | Semana de segunda a domingo, lembretes por notificação (reagendados ao reiniciar o celular); concluir gera o atendimento | ✅ Sprint 3 |
 | Financeiro | Despesas por categoria, parcelamento no boleto com aviso de vencimento, balanço por semana/mês/trimestre/semestre/ano | 🔜 Sprint 4 |
 | Login e backup | Perfis proprietário e funcionário; backup/restauração em .zip | 🔜 Sprint 5 |
 
@@ -43,10 +43,12 @@ app/src/main/java/br/com/fashiondog/
 │       ├── model/   # resultados de consultas que juntam tabelas
 │       ├── dao/     # consultas ao banco
 │       └── AppDatabase.kt
+├── notifications/ # avisos (AlarmManager) e reagendamento no boot
 ├── domain/          # regras de negócio em Kotlin puro, com testes (ex.: GeradorDeParcelas)
 └── ui/
     ├── componentes/ # peças de tela reaproveitáveis
     ├── pet/         # pets e tutores (Sprint 1)
+    ├── agenda/      # agenda e agendamentos (Sprint 3)
     ├── atendimento/ # atendimentos e fotos (Sprint 2)
     ├── mais/        # aba Mais: serviços, configurações
     ├── theme/       # cores e tipografia da marca
@@ -88,7 +90,7 @@ O APK fica em `app/build/outputs/apk/debug/`.
 - [x] Sprint 0 — projeto base, tema, banco com 10 tabelas, navegação, gerador de parcelas, CI
 - [x] Sprint 1 — cadastro de tutores e pets ([documentação](docs/sprints/sprint-1-cadastro.md))
 - [x] Sprint 2 — atendimentos, fotos e histórico do pet ([documentação](docs/sprints/sprint-2-atendimentos.md))
-- [ ] Sprint 3 — agenda e notificações
+- [x] Sprint 3 — agenda e notificações ([documentação](docs/sprints/sprint-3-agenda.md))
 - [ ] Sprint 4 — financeiro
 - [ ] Sprint 5 — login/perfis, backup e acabamento
 

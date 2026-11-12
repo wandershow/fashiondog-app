@@ -5,11 +5,11 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 ## Stack
 
 - Kotlin 2.2.10 + Jetpack Compose (Material 3), AGP 9.5.1 com Kotlin embutido (não usar o plugin `kotlin-android` nem kapt)
-- Room 2.8.4 com KSP 2.3.6; Navigation Compose 2.9.0
+- Room 2.8.4 com KSP 2.3.6 — banco na **versão 2**: mudou tabela? aumente `AppDatabase.VERSAO` e escreva uma `Migration` (nunca destrutiva); Navigation Compose 2.9.0
 - minSdk 26, compileSdk/targetSdk 37
 - Versões ficam em `gradle/libs.versions.toml`
 - Injeção de dependência **manual** (`di/AppContainer.kt`), sem Hilt; ViewModels criados com `viewModelDoApp { app, args -> ... }`
-- ViewModel + StateFlow (lifecycle 2.9.4); câmera do sistema + FileProvider, Coil 2.7.0 (fotos). AlarmManager (`notifications/Avisos.kt`, códigos em `CodigosDeAviso`). Previsto: DataStore (sessão)
+- ViewModel + StateFlow (lifecycle 2.9.4); câmera do sistema + FileProvider, Coil 2.7.0 (fotos). AlarmManager (`notifications/Avisos.kt`, códigos em `CodigosDeAviso`). DataStore 1.1.7 (sessão em `di/Sessao.kt`)
 
 ## Comandos
 
@@ -22,8 +22,8 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - `domain/` — regras em Kotlin puro, com teste unitário (ex.: `GeradorDeParcelas`)
 - `ui/theme` — cores da marca; `ui/navigation/FashionDogApp.kt` — barra inferior com 4 abas
 - `data/repository` — repositórios; `ui/componentes` — peças de tela; `ui/pet` — pets e tutores; `ui/atendimento`; `ui/mais`; `data/fotos`
-- Fotos: caminho **relativo** no banco (`fotos/x.jpg`), arquivo em `filesDir`. `di/Sessao` é provisória (usuário padrão) até o login da Sprint 5
-- `ui/agenda`, `notifications/` (Sprint 3). `ui/financeiro` (Sprint 4). A criar: `ui/login`, `backup/`
+- Fotos: caminho **relativo** no banco (`fotos/x.jpg`), arquivo em `filesDir`. Permissões por perfil só em `domain/Permissoes.kt`
+- `ui/agenda`, `notifications/` (Sprint 3). `ui/financeiro` (Sprint 4), `ui/login`, `backup/` (Sprint 5)
 
 ## Requisitos
 
@@ -58,7 +58,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - [x] Sprint 2: atendimentos, fotos e histórico do pet — `docs/sprints/sprint-2-atendimentos.md`
 - [x] Sprint 3: agenda e notificações — `docs/sprints/sprint-3-agenda.md`
 - [x] Sprint 4: financeiro (despesas, parcelas, avisos, balanço) — `docs/sprints/sprint-4-financeiro.md`
-- [ ] Sprint 5: login/perfis, backup e acabamento
+- [x] Sprint 5: login/perfis, backup e acabamento — `docs/sprints/sprint-5-login-backup.md`
 - [x] Sprint 0 (fim): repositório público https://github.com/wandershow/fashiondog-app, README e GitHub Actions (`.github/workflows/build.yml`) rodando build e testes em push na `main` e em PRs
 
 ## Fluxo de trabalho

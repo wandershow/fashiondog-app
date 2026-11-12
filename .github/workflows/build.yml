@@ -1,0 +1,54 @@
+# Roda a cada push na main e em todo Pull Request:
+# compila o APK de debug e executa os testes unitários.
+name: Build e testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Se chegar um push novo no mesmo PR, cancela a execução antiga.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v5
+
+      # gradle/gradle-daemon-jvm.properties pede Java 25 para o Gradle.
+      - name: Instalar Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+
+      # Configura o Gradle e guarda cache das dependências entre execuções.
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      # Um único comando para build e testes. --no-daemon: no CI a máquina é
+      # descartada no final, então não precisamos manter o Gradle vivo em
+      # segundo plano (e evita o processo ficar pendurado depois do build).
+      - name: Compilar APK e rodar testes unitários
+        timeout-minutes: 15
+        run: ./gradlew assembleDebug testDebugUnitTest --no-daemon
+
+      # Guarda o relatório dos testes (útil para ver o que falhou).
+      - name: Salvar relatório dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes
+          path: app/build/reports/tests/testDebugUnitTest/
+
+      - name: Salvar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fashiondog-debug-apk
+          path: app/build/outputs/apk/debug/*.apk

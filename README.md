@@ -17,7 +17,7 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 | Atendimentos | Banho ou banho e tosa, valor cobrado, pagamento e fotos antes/depois (câmera ou galeria, comprimidas) | ✅ Sprint 2 |
 | Ficha do pet | Último banho em destaque e histórico completo | ✅ Sprint 2 |
 | Agenda | Semana de segunda a domingo, lembretes por notificação (reagendados ao reiniciar o celular); concluir gera o atendimento | ✅ Sprint 3 |
-| Financeiro | Despesas por categoria, parcelamento no boleto com aviso de vencimento, balanço por semana/mês/trimestre/semestre/ano | 🔜 Sprint 4 |
+| Financeiro | Despesas por categoria, boleto parcelado com aviso na véspera e no dia, balanço por semana/mês/trimestre/semestre/ano | ✅ Sprint 4 |
 | Login e backup | Perfis proprietário e funcionário; backup/restauração em .zip | 🔜 Sprint 5 |
 
 ## Tecnologias
@@ -50,7 +50,9 @@ app/src/main/java/br/com/fashiondog/
     ├── pet/         # pets e tutores (Sprint 1)
     ├── agenda/      # agenda e agendamentos (Sprint 3)
     ├── atendimento/ # atendimentos e fotos (Sprint 2)
+    ├── financeiro/  # despesas, parcelas e balanço (Sprint 4)
     ├── mais/        # aba Mais: serviços, configurações
+    ├── preview/     # dados de exemplo dos @Preview
     ├── theme/       # cores e tipografia da marca
     └── navigation/  # rotas e barra inferior
 ```
@@ -62,6 +64,7 @@ Cada sprint tem um documento em [`docs/sprints/`](docs/sprints/) com objetivo, d
 ### Decisões de projeto
 
 - **MVVM**: tela (Compose) → ViewModel (`StateFlow`) → repositório → Room.
+- **Toda tela tem `@Preview`**: a parte que desenha (`XxxConteudo`) é separada da que pega os dados (`XxxScreen`).
 - **Dinheiro em centavos (`Long`)** — evita erros de arredondamento de `Double`
   (ex.: R$ 100,00 em 3 parcelas = 33,33 + 33,33 + 33,34; a última absorve a diferença).
 - **O valor fica gravado no atendimento** — mudar o preço do serviço não altera o histórico.
@@ -91,7 +94,7 @@ O APK fica em `app/build/outputs/apk/debug/`.
 - [x] Sprint 1 — cadastro de tutores e pets ([documentação](docs/sprints/sprint-1-cadastro.md))
 - [x] Sprint 2 — atendimentos, fotos e histórico do pet ([documentação](docs/sprints/sprint-2-atendimentos.md))
 - [x] Sprint 3 — agenda e notificações ([documentação](docs/sprints/sprint-3-agenda.md))
-- [ ] Sprint 4 — financeiro
+- [x] Sprint 4 — financeiro ([documentação](docs/sprints/sprint-4-financeiro.md))
 - [ ] Sprint 5 — login/perfis, backup e acabamento
 
 ## Autor

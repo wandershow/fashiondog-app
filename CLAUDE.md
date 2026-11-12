@@ -23,7 +23,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - `ui/theme` — cores da marca; `ui/navigation/FashionDogApp.kt` — barra inferior com 4 abas
 - `data/repository` — repositórios; `ui/componentes` — peças de tela; `ui/pet` — pets e tutores; `ui/atendimento`; `ui/mais`; `data/fotos`
 - Fotos: caminho **relativo** no banco (`fotos/x.jpg`), arquivo em `filesDir`. `di/Sessao` é provisória (usuário padrão) até o login da Sprint 5
-- `ui/agenda`, `notifications/` (Sprint 3). A criar: `ui/login`, `ui/financeiro`, `backup/`
+- `ui/agenda`, `notifications/` (Sprint 3). `ui/financeiro` (Sprint 4). A criar: `ui/login`, `backup/`
 
 ## Requisitos
 
@@ -57,7 +57,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - [x] Sprint 1: cadastro de tutores e pets — `docs/sprints/sprint-1-cadastro.md`
 - [x] Sprint 2: atendimentos, fotos e histórico do pet — `docs/sprints/sprint-2-atendimentos.md`
 - [x] Sprint 3: agenda e notificações — `docs/sprints/sprint-3-agenda.md`
-- [ ] Sprint 4: financeiro (despesas, parcelas, avisos, balanço)
+- [x] Sprint 4: financeiro (despesas, parcelas, avisos, balanço) — `docs/sprints/sprint-4-financeiro.md`
 - [ ] Sprint 5: login/perfis, backup e acabamento
 - [x] Sprint 0 (fim): repositório público https://github.com/wandershow/fashiondog-app, README e GitHub Actions (`.github/workflows/build.yml`) rodando build e testes em push na `main` e em PRs
 

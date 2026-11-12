@@ -56,7 +56,9 @@ android {
         release {
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                // Sem "packageScope": otimizar só as bibliotecas (o padrão do modelo do AGP 9)
+                // quebrava o acesso entre classes do Kotlin e o app abria e fechava
+                // (IllegalAccessError, achado na homologação). Otimizar tudo é o modo testado.
             }
             signingConfig = signingConfigs.findByName("producao")
         }

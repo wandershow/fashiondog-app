@@ -79,6 +79,26 @@ class ValidacaoDeContaTest {
     }
 
     @Test
+    fun `mudar o login corrige erro de digitacao`() {
+        // ninguém usa "fashiondog": pode trocar
+        assertNull(ValidacaoDeConta.erroNovoLogin("fashiondog", meuId = 1, idDoDonoDoLogin = null))
+        // manter o próprio login também pode
+        assertNull(ValidacaoDeConta.erroNovoLogin("fashiodog", meuId = 1, idDoDonoDoLogin = 1))
+    }
+
+    @Test
+    fun `nao pode pegar o login de outro usuario nem login invalido`() {
+        assertNotNull(ValidacaoDeConta.erroNovoLogin("ana", meuId = 1, idDoDonoDoLogin = 2))
+        assertNotNull(ValidacaoDeConta.erroNovoLogin("fashion dog", meuId = 1, idDoDonoDoLogin = null))
+    }
+
+    @Test
+    fun `nome em branco`() {
+        assertNotNull(ValidacaoDeConta.erroNome("  "))
+        assertNull(ValidacaoDeConta.erroNome("Cintia"))
+    }
+
+    @Test
     fun `senha curta e confirmacao diferente`() {
         assertNotNull(ValidacaoDeConta.erroSenha("12345"))
         assertNull(ValidacaoDeConta.erroSenha("123456"))

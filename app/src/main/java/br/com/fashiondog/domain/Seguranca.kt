@@ -89,4 +89,15 @@ object ValidacaoDeConta {
 
     fun erroConfirmacao(senha: String, confirmacao: String): String? =
         if (senha != confirmacao) "As senhas não são iguais" else null
+
+    fun erroNome(nome: String): String? =
+        if (nome.isBlank()) "Informe o nome" else null
+
+    /**
+     * Mudar o login de alguém: o novo precisa ser válido e não pode pertencer a OUTRO
+     * usuário (nem desativado: o histórico aponta para ele). Manter o próprio login é ok.
+     * [idDoDonoDoLogin] = id de quem já usa o login novo, ou null se ninguém usa.
+     */
+    fun erroNovoLogin(novoLogin: String, meuId: Long, idDoDonoDoLogin: Long?): String? =
+        erroLogin(novoLogin) ?: if (idDoDonoDoLogin != null && idDoDonoDoLogin != meuId) "Este login já existe" else null
 }

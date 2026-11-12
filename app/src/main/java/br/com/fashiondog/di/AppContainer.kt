@@ -3,8 +3,10 @@ package br.com.fashiondog.di
 import android.content.Context
 import br.com.fashiondog.data.fotos.ArmazenamentoDeFotos
 import br.com.fashiondog.data.local.AppDatabase
+import br.com.fashiondog.data.repository.AgendaRepository
 import br.com.fashiondog.data.repository.AtendimentoRepository
 import br.com.fashiondog.data.repository.CadastroRepository
+import br.com.fashiondog.notifications.Avisos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,9 +29,18 @@ class AppContainer(context: Context) {
 
     val fotos: ArmazenamentoDeFotos by lazy { ArmazenamentoDeFotos(appContext) }
 
+    val avisos: Avisos by lazy { Avisos(appContext) }
+
     val sessao: Sessao by lazy { Sessao(database) }
 
     val cadastro: CadastroRepository by lazy { CadastroRepository(database) }
 
-    val atendimentos: AtendimentoRepository by lazy { AtendimentoRepository(database, fotos) }
+    val atendimentos: AtendimentoRepository by lazy { AtendimentoRepository(database, fotos, avisos) }
+
+    val agenda: AgendaRepository by lazy { AgendaRepository(database, avisos) }
+
+    /** Recria todos os avisos pendentes (reinício do celular, abertura do app). */
+    suspend fun reagendarAvisos() {
+        agenda.reagendarAvisos()
+    }
 }

@@ -8,9 +8,21 @@ import androidx.room.Update
 import br.com.fashiondog.data.local.entity.Agendamento
 import br.com.fashiondog.data.local.entity.Atendimento
 import br.com.fashiondog.data.local.entity.Foto
+import br.com.fashiondog.data.local.entity.StatusAgendamento
+import br.com.fashiondog.data.local.model.AgendamentoDetalhado
 import br.com.fashiondog.data.local.model.AtendimentoComServico
 import br.com.fashiondog.data.local.model.AtendimentoDetalhado
 import kotlinx.coroutines.flow.Flow
+
+/** Início comum das consultas de agendamento com pet, tutor e serviço. */
+private const val SELECT_DETALHADO = """
+    SELECT agendamento.*, pet.nome AS petNome, tutor.nome AS tutorNome,
+           tutor.telefone AS tutorTelefone, servico.nome AS servicoNome
+    FROM agendamento
+    INNER JOIN pet ON pet.id = agendamento.petId
+    INNER JOIN tutor ON tutor.id = pet.tutorId
+    INNER JOIN servico ON servico.id = agendamento.servicoId
+"""
 
 @Dao
 interface AgendamentoDao {
@@ -23,6 +35,22 @@ interface AgendamentoDao {
     /** Agendamentos de um período (um dia ou uma semana), em ordem de horário. */
     @Query("SELECT * FROM agendamento WHERE dataHora >= :inicio AND dataHora < :fim ORDER BY dataHora")
     fun observarEntre(inicio: Long, fim: Long): Flow<List<Agendamento>>
+
+    @Query("SELECT * FROM agendamento WHERE id = :id")
+    suspend fun buscarPorId(id: Long): Agendamento?
+
+    @Query("$SELECT_DETALHADO WHERE agendamento.dataHora >= :inicio AND agendamento.dataHora < :fim ORDER BY agendamento.dataHora")
+    fun observarDetalhadosEntre(inicio: Long, fim: Long): Flow<List<AgendamentoDetalhado>>
+
+    @Query("$SELECT_DETALHADO WHERE agendamento.id = :id")
+    suspend fun buscarDetalhado(id: Long): AgendamentoDetalhado?
+
+    /** Usado para recriar os avisos quando o celular reinicia. */
+    @Query("$SELECT_DETALHADO WHERE agendamento.status = 'AGENDADO' AND agendamento.dataHora >= :aPartirDe")
+    suspend fun futurosAgendados(aPartirDe: Long): List<AgendamentoDetalhado>
+
+    @Query("UPDATE agendamento SET status = :status WHERE id = :id")
+    suspend fun mudarStatus(id: Long, status: StatusAgendamento)
 }
 
 @Dao

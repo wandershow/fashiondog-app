@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import br.com.fashiondog.data.local.dao.AgendamentoDao
 import br.com.fashiondog.data.local.dao.AtendimentoDao
 import br.com.fashiondog.data.local.dao.FinanceiroDao
@@ -35,7 +37,7 @@ import br.com.fashiondog.data.local.entity.Usuario
         Despesa::class,
         Parcela::class,
     ],
-    version = 1,
+    version = AppDatabase.VERSAO,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -48,6 +50,21 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun financeiroDao(): FinanceiroDao
 
     companion object {
+        /** Mudou alguma tabela? Aumente a versão e escreva a migração abaixo. */
+        const val VERSAO = 2
+        const val NOME = "fashiondog.db"
+
+        /**
+         * Versão 1 → 2 (Sprint 5): coluna do código de recuperação do proprietário.
+         * Migração = o "passo a passo" para atualizar um banco que já tem dados,
+         * sem apagar nada do que está no celular.
+         */
+        val MIGRACAO_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE usuario ADD COLUMN codigoRecuperacaoHash TEXT")
+            }
+        }
+
         @Volatile
         private var instancia: AppDatabase? = null
 
@@ -57,8 +74,17 @@ abstract class AppDatabase : RoomDatabase() {
                 instancia ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "fashiondog.db",
-                ).build().also { instancia = it }
+                    NOME,
+                )
+                    .addMigrations(MIGRACAO_1_2)
+                    .build()
+                    .also { instancia = it }
             }
+
+        /** Fecha o banco (usado antes de restaurar um backup por cima do arquivo). */
+        fun fechar() = synchronized(this) {
+            instancia?.close()
+            instancia = null
+        }
     }
 }

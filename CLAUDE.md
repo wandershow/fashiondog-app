@@ -59,6 +59,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - [x] Sprint 3: agenda e notificações — `docs/sprints/sprint-3-agenda.md`
 - [x] Sprint 4: financeiro (despesas, parcelas, avisos, balanço) — `docs/sprints/sprint-4-financeiro.md`
 - [x] Sprint 5: login/perfis, backup e acabamento — `docs/sprints/sprint-5-login-backup.md`
+- [x] Ajuste 01: Minha conta (mudar nome/login) — `docs/ajustes/01-minha-conta.md`. Ajustes pós-sprint vão em `docs/ajustes/NN-*.md`
 - [x] Sprint 0 (fim): repositório público https://github.com/wandershow/fashiondog-app, README e GitHub Actions (`.github/workflows/build.yml`) rodando build e testes em push na `main` e em PRs
 
 ## Fluxo de trabalho

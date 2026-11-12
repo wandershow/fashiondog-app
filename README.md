@@ -63,6 +63,7 @@ app/src/main/java/br/com/fashiondog/
 ### Documentação das sprints
 
 Cada sprint tem um documento em [`docs/sprints/`](docs/sprints/) com objetivo, decisões, testes e roteiro de teste manual.
+Ajustes feitos depois das sprints ficam em [`docs/ajustes/`](docs/ajustes/).
 
 ### Decisões de projeto
 

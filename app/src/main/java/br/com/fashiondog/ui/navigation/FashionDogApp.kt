@@ -1,7 +1,6 @@
 package br.com.fashiondog.ui.navigation
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -30,6 +28,8 @@ import br.com.fashiondog.ui.agenda.AgendaScreen
 import br.com.fashiondog.ui.agenda.AgendamentoFormScreen
 import br.com.fashiondog.ui.atendimento.AtendimentoDetalheScreen
 import br.com.fashiondog.ui.atendimento.AtendimentoFormScreen
+import br.com.fashiondog.ui.financeiro.DespesaFormScreen
+import br.com.fashiondog.ui.financeiro.FinanceiroScreen
 import br.com.fashiondog.ui.mais.AvisosScreen
 import br.com.fashiondog.ui.mais.MaisScreen
 import br.com.fashiondog.ui.mais.OpcaoMais
@@ -99,7 +99,10 @@ fun FashionDogApp() {
             composable(Rotas.AGENDAMENTO_FORM, arguments = listOf(idArg("agendamentoId"), idArg("dia"))) {
                 AgendamentoFormScreen(aoVoltar = { navController.popBackStack() })
             }
-            composable(Aba.FINANCEIRO.rota) { TelaEmConstrucao("Financeiro") }
+            composable(Aba.FINANCEIRO.rota) {
+                FinanceiroScreen(aoNovaDespesa = { navController.navigate(Rotas.DESPESA_FORM) })
+            }
+            composable(Rotas.DESPESA_FORM) { DespesaFormScreen(aoVoltar = { navController.popBackStack() }) }
             composable(Aba.MAIS.rota) {
                 MaisScreen(
                     opcoes = listOf(
@@ -192,13 +195,5 @@ fun NavHostController.irParaAba(aba: Aba) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
-    }
-}
-
-/** Tela provisória; cada aba ganha sua tela real nas próximas sprints. */
-@Composable
-private fun TelaEmConstrucao(titulo: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
     }
 }

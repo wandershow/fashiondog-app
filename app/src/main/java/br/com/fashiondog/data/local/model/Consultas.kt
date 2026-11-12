@@ -3,6 +3,8 @@ package br.com.fashiondog.data.local.model
 import androidx.room.Embedded
 import br.com.fashiondog.data.local.entity.Agendamento
 import br.com.fashiondog.data.local.entity.Atendimento
+import br.com.fashiondog.data.local.entity.FormaPagamentoDespesa
+import br.com.fashiondog.data.local.entity.Parcela
 import br.com.fashiondog.data.local.entity.Pet
 import br.com.fashiondog.data.local.entity.Tutor
 
@@ -44,4 +46,19 @@ data class AgendamentoDetalhado(
     val tutorNome: String,
     val tutorTelefone: String,
     val servicoNome: String,
+)
+
+/** Uma parcela com a descrição e a categoria da despesa (para o financeiro e os avisos). */
+data class ParcelaDetalhada(
+    @Embedded val parcela: Parcela,
+    val descricao: String,
+    val totalParcelas: Int,
+    val formaPagamento: FormaPagamentoDespesa,
+    val categoriaNome: String,
+)
+
+/** Total de despesa de uma categoria no período. */
+data class TotalPorCategoria(
+    val categoriaNome: String,
+    val totalCentavos: Long,
 )

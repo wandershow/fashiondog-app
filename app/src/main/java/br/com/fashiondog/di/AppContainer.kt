@@ -6,6 +6,7 @@ import br.com.fashiondog.data.local.AppDatabase
 import br.com.fashiondog.data.repository.AgendaRepository
 import br.com.fashiondog.data.repository.AtendimentoRepository
 import br.com.fashiondog.data.repository.CadastroRepository
+import br.com.fashiondog.data.repository.FinanceiroRepository
 import br.com.fashiondog.notifications.Avisos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,8 +40,11 @@ class AppContainer(context: Context) {
 
     val agenda: AgendaRepository by lazy { AgendaRepository(database, avisos) }
 
+    val financeiro: FinanceiroRepository by lazy { FinanceiroRepository(database, avisos) }
+
     /** Recria todos os avisos pendentes (reinício do celular, abertura do app). */
     suspend fun reagendarAvisos() {
         agenda.reagendarAvisos()
+        financeiro.reagendarAvisos()
     }
 }

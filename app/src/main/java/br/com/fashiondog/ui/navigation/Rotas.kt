@@ -31,6 +31,8 @@ object Rotas {
     const val SERVICOS = "mais/servicos"
     const val AVISOS = "mais/avisos"
 
+    const val DESPESA_FORM = "financeiro/despesa/nova"
+
     const val AGENDAMENTO_FORM = "agendamento/form?agendamentoId={agendamentoId}&dia={dia}"
     /** [dia] vai como "epoch day" (número de dias desde 1970), um Long simples de passar na rota. */
     fun novoAgendamento(dia: java.time.LocalDate) = "agendamento/form?agendamentoId=-1&dia=${dia.toEpochDay()}"

@@ -13,7 +13,7 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 
 | Módulo | O que faz | Status |
 |---|---|---|
-| Cadastro | Tutores (nome, telefone) e seus pets | 🔜 Sprint 1 |
+| Cadastro | Tutores e pets, busca sem acento, ligar/WhatsApp, desativar sem perder histórico | ✅ Sprint 1 |
 | Atendimentos | Banho ou banho e tosa, valor cobrado, pagamento e até 2 fotos | 🔜 Sprint 2 |
 | Ficha do pet | Último banho em destaque e histórico completo | 🔜 Sprint 2 |
 | Agenda | Agendamentos com aviso; concluir gera o atendimento | 🔜 Sprint 3 |
@@ -32,19 +32,30 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 
 ```
 app/src/main/java/br/com/fashiondog/
-├── data/local/
-│   ├── entity/      # tabelas do Room (tutor, pet, servico, agendamento, atendimento,
-│   │                #   foto, usuario, categoria, despesa, parcela)
-│   ├── dao/         # consultas ao banco
-│   └── AppDatabase.kt
+├── di/              # AppContainer: cria banco e repositórios (injeção manual)
+├── data/
+│   ├── repository/  # único ponto de acesso ao banco para as telas
+│   └── local/
+│       ├── entity/  # tabelas do Room (tutor, pet, servico, agendamento, atendimento,
+│       │            #   foto, usuario, categoria, despesa, parcela)
+│       ├── model/   # resultados de consultas que juntam tabelas
+│       ├── dao/     # consultas ao banco
+│       └── AppDatabase.kt
 ├── domain/          # regras de negócio em Kotlin puro, com testes (ex.: GeradorDeParcelas)
 └── ui/
+    ├── componentes/ # peças de tela reaproveitáveis
+    ├── pet/         # pets e tutores (Sprint 1)
     ├── theme/       # cores e tipografia da marca
-    └── navigation/  # navegação principal
+    └── navigation/  # rotas e barra inferior
 ```
+
+### Documentação das sprints
+
+Cada sprint tem um documento em [`docs/sprints/`](docs/sprints/) com objetivo, decisões, testes e roteiro de teste manual.
 
 ### Decisões de projeto
 
+- **MVVM**: tela (Compose) → ViewModel (`StateFlow`) → repositório → Room.
 - **Dinheiro em centavos (`Long`)** — evita erros de arredondamento de `Double`
   (ex.: R$ 100,00 em 3 parcelas = 33,33 + 33,33 + 33,34; a última absorve a diferença).
 - **O valor fica gravado no atendimento** — mudar o preço do serviço não altera o histórico.
@@ -71,7 +82,7 @@ O APK fica em `app/build/outputs/apk/debug/`.
 
 - [x] Requisitos, modelo de dados e protótipo das telas
 - [x] Sprint 0 — projeto base, tema, banco com 10 tabelas, navegação, gerador de parcelas, CI
-- [ ] Sprint 1 — cadastro de tutores e pets
+- [x] Sprint 1 — cadastro de tutores e pets ([documentação](docs/sprints/sprint-1-cadastro.md))
 - [ ] Sprint 2 — atendimentos, fotos e histórico do pet
 - [ ] Sprint 3 — agenda e notificações
 - [ ] Sprint 4 — financeiro

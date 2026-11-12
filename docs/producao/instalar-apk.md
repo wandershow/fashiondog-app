@@ -3,7 +3,7 @@
 O FashionDog não está na Play Store. Ele é instalado direto pelo arquivo **APK** — o
 "instalador" do app, como um `.exe` do Windows.
 
-- Arquivo de produção: **`FashionDog-1.0.0.apk`** (3 MB), na pasta `D:\Fashion Dog\dist\`.
+- Arquivo de produção: **`FashionDog-1.0.0.apk`** (2,2 MB), na pasta `D:\Fashion Dog\dist\`.
 - Funciona em **Android 8.0 ou mais novo**.
 - É o mesmo APK para todos os celulares da loja. Cada celular tem os **próprios dados**
   (o app é offline): instalar em outro celular **não** copia pets, agenda nem financeiro.

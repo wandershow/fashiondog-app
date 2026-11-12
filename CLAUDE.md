@@ -9,7 +9,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - minSdk 26, compileSdk/targetSdk 37
 - Versões ficam em `gradle/libs.versions.toml`
 - Injeção de dependência **manual** (`di/AppContainer.kt`), sem Hilt; ViewModels criados com `viewModelDoApp { app, args -> ... }`
-- ViewModel + StateFlow (lifecycle 2.9.4). Previsto para depois: DataStore (sessão), AlarmManager (avisos), câmera do sistema + Coil (fotos)
+- ViewModel + StateFlow (lifecycle 2.9.4); câmera do sistema + FileProvider, Coil 2.7.0 (fotos). Previsto: DataStore (sessão), AlarmManager (avisos)
 
 ## Comandos
 
@@ -21,7 +21,8 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - `data/local/entity` — entidades Room; `data/local/dao` — DAOs; `data/local/AppDatabase.kt`
 - `domain/` — regras em Kotlin puro, com teste unitário (ex.: `GeradorDeParcelas`)
 - `ui/theme` — cores da marca; `ui/navigation/FashionDogApp.kt` — barra inferior com 4 abas
-- `data/repository` — repositórios; `ui/componentes` — peças de tela; `ui/pet` — pets e tutores
+- `data/repository` — repositórios; `ui/componentes` — peças de tela; `ui/pet` — pets e tutores; `ui/atendimento`; `ui/mais`; `data/fotos`
+- Fotos: caminho **relativo** no banco (`fotos/x.jpg`), arquivo em `filesDir`. `di/Sessao` é provisória (usuário padrão) até o login da Sprint 5
 - A criar: `ui/login`, `ui/agenda`, `ui/atendimento`, `ui/financeiro`, `notifications/`, `backup/`
 
 ## Requisitos
@@ -54,7 +55,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - [x] Etapas 1–3: requisitos, modelo de dados e protótipo das telas aprovados
 - [x] Sprint 0: projeto, tema, ícone, banco (10 tabelas), navegação vazia, gerador de parcelas com testes
 - [x] Sprint 1: cadastro de tutores e pets — `docs/sprints/sprint-1-cadastro.md`
-- [ ] Sprint 2: atendimentos, fotos e histórico do pet
+- [x] Sprint 2: atendimentos, fotos e histórico do pet — `docs/sprints/sprint-2-atendimentos.md`
 - [ ] Sprint 3: agenda e notificações
 - [ ] Sprint 4: financeiro (despesas, parcelas, avisos, balanço)
 - [ ] Sprint 5: login/perfis, backup e acabamento

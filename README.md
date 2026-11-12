@@ -14,8 +14,8 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 | Módulo | O que faz | Status |
 |---|---|---|
 | Cadastro | Tutores e pets, busca sem acento, ligar/WhatsApp, desativar sem perder histórico | ✅ Sprint 1 |
-| Atendimentos | Banho ou banho e tosa, valor cobrado, pagamento e até 2 fotos | 🔜 Sprint 2 |
-| Ficha do pet | Último banho em destaque e histórico completo | 🔜 Sprint 2 |
+| Atendimentos | Banho ou banho e tosa, valor cobrado, pagamento e fotos antes/depois (câmera ou galeria, comprimidas) | ✅ Sprint 2 |
+| Ficha do pet | Último banho em destaque e histórico completo | ✅ Sprint 2 |
 | Agenda | Agendamentos com aviso; concluir gera o atendimento | 🔜 Sprint 3 |
 | Financeiro | Despesas por categoria, parcelamento no boleto com aviso de vencimento, balanço por semana/mês/trimestre/semestre/ano | 🔜 Sprint 4 |
 | Login e backup | Perfis proprietário e funcionário; backup/restauração em .zip | 🔜 Sprint 5 |
@@ -26,6 +26,7 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 - **Room** 2.8 (banco SQLite local) com **KSP**
 - **Navigation Compose** — barra inferior com Agenda, Pets, Financeiro e Mais
 - Android Gradle Plugin 9.5 · minSdk 26 (Android 8.0) · targetSdk 37
+- **Coil** para exibir fotos · **ExifInterface** para corrigir a rotação
 - **JUnit 4** para as regras de negócio · **GitHub Actions** para build e testes automáticos
 
 ## Arquitetura
@@ -34,6 +35,7 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 app/src/main/java/br/com/fashiondog/
 ├── di/              # AppContainer: cria banco e repositórios (injeção manual)
 ├── data/
+│   ├── fotos/       # compressão e armazenamento das fotos
 │   ├── repository/  # único ponto de acesso ao banco para as telas
 │   └── local/
 │       ├── entity/  # tabelas do Room (tutor, pet, servico, agendamento, atendimento,
@@ -45,6 +47,8 @@ app/src/main/java/br/com/fashiondog/
 └── ui/
     ├── componentes/ # peças de tela reaproveitáveis
     ├── pet/         # pets e tutores (Sprint 1)
+    ├── atendimento/ # atendimentos e fotos (Sprint 2)
+    ├── mais/        # aba Mais: serviços, configurações
     ├── theme/       # cores e tipografia da marca
     └── navigation/  # rotas e barra inferior
 ```
@@ -83,7 +87,7 @@ O APK fica em `app/build/outputs/apk/debug/`.
 - [x] Requisitos, modelo de dados e protótipo das telas
 - [x] Sprint 0 — projeto base, tema, banco com 10 tabelas, navegação, gerador de parcelas, CI
 - [x] Sprint 1 — cadastro de tutores e pets ([documentação](docs/sprints/sprint-1-cadastro.md))
-- [ ] Sprint 2 — atendimentos, fotos e histórico do pet
+- [x] Sprint 2 — atendimentos, fotos e histórico do pet ([documentação](docs/sprints/sprint-2-atendimentos.md))
 - [ ] Sprint 3 — agenda e notificações
 - [ ] Sprint 4 — financeiro
 - [ ] Sprint 5 — login/perfis, backup e acabamento

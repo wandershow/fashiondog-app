@@ -3,6 +3,7 @@ package br.com.fashiondog.ui.pet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -15,6 +16,8 @@ import br.com.fashiondog.ui.componentes.Carregando
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -82,19 +85,34 @@ fun PetFormScreen(aoVoltar: () -> Unit, aoSalvar: (petId: Long) -> Unit) {
     LaunchedEffect(estado.salvoComId) {
         estado.salvoComId?.let(aoSalvar)
     }
+    PetFormConteudo(estado, aoVoltar, vm::mudarCampos, vm::salvar)
+}
 
+@Composable
+fun PetFormConteudo(
+    estado: PetFormEstado,
+    aoVoltar: () -> Unit,
+    aoMudarCampos: (CamposPet) -> Unit,
+    aoSalvar: () -> Unit,
+) {
     Tela(titulo = if (estado.ehNovo) "Novo pet" else "Editar pet", aoVoltar = aoVoltar) { espacamento ->
         if (estado.carregando) {
             Carregando()
             return@Tela
         }
         Formulario(espacamento) {
-            CamposDoPet(estado.campos, vm::mudarCampos)
+            CamposDoPet(estado.campos, aoMudarCampos)
             BotaoPrincipal(
                 texto = if (estado.salvando) "Salvando..." else "Salvar",
-                aoClicar = vm::salvar,
+                aoClicar = aoSalvar,
                 habilitado = !estado.salvando,
             )
         }
     }
+}
+
+@Preview(showBackground = true, name = "Novo pet")
+@Composable
+private fun PreviewNovoPet() = PreviewNoTema {
+    PetFormConteudo(PetFormEstado(campos = CamposPet.de(DadosDePreview.thor)), {}, {}, {})
 }

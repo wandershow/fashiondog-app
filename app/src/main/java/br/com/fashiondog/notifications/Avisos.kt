@@ -8,10 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import br.com.fashiondog.data.local.entity.StatusAgendamento
+import br.com.fashiondog.data.local.entity.StatusParcela
 import br.com.fashiondog.data.local.model.AgendamentoDetalhado
+import br.com.fashiondog.data.local.model.ParcelaDetalhada
+import br.com.fashiondog.domain.AvisoDeParcela
 import br.com.fashiondog.domain.CalculadoraDeAvisos
 import br.com.fashiondog.domain.CodigosDeAviso
 import br.com.fashiondog.domain.Datas
+import br.com.fashiondog.domain.Dinheiro
 
 /** Um aviso pronto para ser agendado: quando toca e o que mostra. */
 data class Aviso(
@@ -103,6 +107,42 @@ class Avisos(private val contexto: Context) {
     }
 
     fun cancelarAgendamento(agendamentoId: Long) = cancelar(CodigosDeAviso.agendamento(agendamentoId))
+
+    // ----- Parcelas -----
+
+    /**
+     * Dois avisos por parcela pendente: na véspera e no dia do vencimento, às 9h.
+     * Parcela paga não tem aviso (os dois são cancelados).
+     */
+    fun agendarParcela(item: ParcelaDetalhada, agora: Long = System.currentTimeMillis()) {
+        val parcela = item.parcela
+        cancelarParcela(parcela.id)
+        if (parcela.status != StatusParcela.PENDENTE) return
+
+        val vencimento = Datas.paraLocalDate(parcela.vencimento)
+        val qual = if (item.totalParcelas > 1) " (${parcela.numero}/${item.totalParcelas})" else ""
+        val valor = Dinheiro.formatar(parcela.valorCentavos)
+        CalculadoraDeAvisos.horariosDaParcela(vencimento, agora).forEach { (tipo, quando) ->
+            val (codigo, titulo) = when (tipo) {
+                AvisoDeParcela.VESPERA -> CodigosDeAviso.parcelaVespera(parcela.id) to "Boleto vence amanhã: $valor"
+                AvisoDeParcela.NO_DIA -> CodigosDeAviso.parcelaNoDia(parcela.id) to "Boleto vence hoje: $valor"
+            }
+            agendar(
+                Aviso(
+                    codigo = codigo,
+                    quando = quando,
+                    canal = CANAL_PARCELAS,
+                    titulo = titulo,
+                    texto = "${item.descricao}$qual · ${item.categoriaNome} · vence ${Datas.formatarData(vencimento)}",
+                ),
+            )
+        }
+    }
+
+    fun cancelarParcela(parcelaId: Long) {
+        cancelar(CodigosDeAviso.parcelaVespera(parcelaId))
+        cancelar(CodigosDeAviso.parcelaNoDia(parcelaId))
+    }
 
     companion object {
         const val CANAL_AGENDA = "agenda"

@@ -7,15 +7,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -40,6 +42,9 @@ import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
+import java.time.LocalDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +52,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 val FormaPagamento.rotulo: String
     get() = when (this) {
@@ -211,6 +215,21 @@ class AtendimentoFormViewModel(
     }
 }
 
+/** Tudo o que a tela pode pedir ao ViewModel. Os padrões "não fazem nada" (úteis no @Preview). */
+data class AcoesDoAtendimento(
+    val aoVoltar: () -> Unit = {},
+    val aoEscolherServico: (Servico) -> Unit = {},
+    val aoMudarValor: (Long) -> Unit = {},
+    val aoEscolherPagamento: (FormaPagamento) -> Unit = {},
+    val aoMudarData: (LocalDate) -> Unit = {},
+    val aoMudarObservacoes: (String) -> Unit = {},
+    val destinoParaCamera: () -> Uri? = { null },
+    val aoReceberFoto: (TipoFoto, Uri) -> Unit = { _, _ -> },
+    val aoRemoverFoto: (TipoFoto) -> Unit = {},
+    val aoMensagemMostrada: () -> Unit = {},
+    val aoSalvar: () -> Unit = {},
+)
+
 @Composable
 fun AtendimentoFormScreen(aoVoltar: () -> Unit, aoSalvar: (atendimentoId: Long) -> Unit) {
     val vm = viewModelDoApp { app, args ->
@@ -220,9 +239,29 @@ fun AtendimentoFormScreen(aoVoltar: () -> Unit, aoSalvar: (atendimentoId: Long) 
 
     LaunchedEffect(estado.salvoComId) { estado.salvoComId?.let(aoSalvar) }
 
+    AtendimentoFormConteudo(
+        estado,
+        AcoesDoAtendimento(
+            aoVoltar = aoVoltar,
+            aoEscolherServico = vm::escolherServico,
+            aoMudarValor = vm::mudarValor,
+            aoEscolherPagamento = vm::escolherPagamento,
+            aoMudarData = vm::mudarData,
+            aoMudarObservacoes = vm::mudarObservacoes,
+            destinoParaCamera = vm::destinoParaCamera,
+            aoReceberFoto = vm::receberFoto,
+            aoRemoverFoto = vm::removerFoto,
+            aoMensagemMostrada = vm::mensagemMostrada,
+            aoSalvar = vm::salvar,
+        ),
+    )
+}
+
+@Composable
+fun AtendimentoFormConteudo(estado: AtendimentoFormEstado, acoes: AcoesDoAtendimento) {
     Tela(
         titulo = if (estado.ehNovo) "Novo atendimento" else "Editar atendimento",
-        aoVoltar = aoVoltar,
+        aoVoltar = acoes.aoVoltar,
     ) { espacamento ->
         if (estado.carregando) {
             Carregando()
@@ -235,14 +274,14 @@ fun AtendimentoFormScreen(aoVoltar: () -> Unit, aoSalvar: (atendimentoId: Long) 
                 titulo = "Serviço",
                 opcoes = estado.servicos,
                 selecionada = estado.servicos.firstOrNull { it.id == estado.servicoId },
-                aoEscolher = vm::escolherServico,
+                aoEscolher = acoes.aoEscolherServico,
                 rotuloDe = { it.nome },
             )
             estado.erroServico?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
             CampoDinheiro(
                 centavos = estado.valorCentavos,
-                aoMudar = vm::mudarValor,
+                aoMudar = acoes.aoMudarValor,
                 rotulo = "Valor cobrado",
                 erro = estado.erroValor,
             )
@@ -251,13 +290,13 @@ fun AtendimentoFormScreen(aoVoltar: () -> Unit, aoSalvar: (atendimentoId: Long) 
                 titulo = "Pagamento",
                 opcoes = FormaPagamento.entries,
                 selecionada = estado.formaPagamento,
-                aoEscolher = vm::escolherPagamento,
+                aoEscolher = acoes.aoEscolherPagamento,
                 rotuloDe = { it.rotulo },
             )
             estado.erroPagamento?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
-            CampoData(data = estado.data, aoMudar = vm::mudarData, rotulo = "Data")
-            CampoTexto(valor = estado.observacoes, aoMudar = vm::mudarObservacoes, rotulo = "Observações", linhas = 2)
+            CampoData(data = estado.data, aoMudar = acoes.aoMudarData, rotulo = "Data")
+            CampoTexto(valor = estado.observacoes, aoMudar = acoes.aoMudarObservacoes, rotulo = "Observações", linhas = 2)
 
             TituloSecao("Fotos")
             Row(
@@ -269,7 +308,7 @@ fun AtendimentoFormScreen(aoVoltar: () -> Unit, aoSalvar: (atendimentoId: Long) 
                         tipo = tipo,
                         caminho = estado.fotos[tipo],
                         processando = estado.processandoFoto == tipo,
-                        vm = vm,
+                        acoes = acoes,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -278,13 +317,13 @@ fun AtendimentoFormScreen(aoVoltar: () -> Unit, aoSalvar: (atendimentoId: Long) 
                 Text(it, color = MaterialTheme.colorScheme.error)
                 LaunchedEffect(it) {
                     delay(4_000)
-                    vm.mensagemMostrada()
+                    acoes.aoMensagemMostrada()
                 }
             }
 
             BotaoPrincipal(
                 texto = if (estado.salvando) "Salvando..." else "Salvar atendimento",
-                aoClicar = vm::salvar,
+                aoClicar = acoes.aoSalvar,
                 habilitado = !estado.salvando && estado.processandoFoto == null,
             )
         }
@@ -297,20 +336,26 @@ private fun EspacoDeFoto(
     tipo: TipoFoto,
     caminho: String?,
     processando: Boolean,
-    vm: AtendimentoFormViewModel,
+    acoes: AcoesDoAtendimento,
     modifier: Modifier,
 ) {
+    // No @Preview não existe câmera nem galeria: mostra só o desenho.
+    if (LocalInspectionMode.current) {
+        FotoComAcoes(tipo.rotulo, caminho, processando, {}, {}, {}, modifier)
+        return
+    }
+
     // rememberSaveable: o Android pode recriar a tela enquanto a câmera está aberta.
     var destinoCamera by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // Abre o app de câmera do sistema; ele grava a foto em destinoCamera.
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { tirou ->
         val destino = destinoCamera
-        if (tirou && destino != null) vm.receberFoto(tipo, destino)
+        if (tirou && destino != null) acoes.aoReceberFoto(tipo, destino)
     }
     // Seletor de fotos do Android (não precisa pedir permissão de armazenamento).
     val galeria = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) vm.receberFoto(tipo, uri)
+        if (uri != null) acoes.aoReceberFoto(tipo, uri)
     }
 
     FotoComAcoes(
@@ -318,12 +363,46 @@ private fun EspacoDeFoto(
         caminho = caminho,
         processando = processando,
         aoCamera = {
-            val destino = vm.destinoParaCamera()
-            destinoCamera = destino
-            camera.launch(destino)
+            acoes.destinoParaCamera()?.let { destino ->
+                destinoCamera = destino
+                camera.launch(destino)
+            }
         },
         aoGaleria = { galeria.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-        aoRemover = { vm.removerFoto(tipo) },
+        aoRemover = { acoes.aoRemoverFoto(tipo) },
         modifier = modifier,
+    )
+}
+
+@Preview(showBackground = true, heightDp = 1100, name = "Novo atendimento")
+@Composable
+private fun PreviewAtendimentoForm() = PreviewNoTema {
+    AtendimentoFormConteudo(
+        AtendimentoFormEstado(
+            carregando = false,
+            petNome = "Bóris",
+            servicos = DadosDePreview.servicos,
+            servicoId = DadosDePreview.banhoETosa.id,
+            valorCentavos = 7_500,
+            formaPagamento = FormaPagamento.PIX,
+            processandoFoto = TipoFoto.DEPOIS,
+        ),
+        AcoesDoAtendimento(),
+    )
+}
+
+@Preview(showBackground = true, heightDp = 1100, name = "Atendimento com erros")
+@Composable
+private fun PreviewAtendimentoErros() = PreviewNoTema {
+    AtendimentoFormConteudo(
+        AtendimentoFormEstado(
+            carregando = false,
+            petNome = "Mel",
+            servicos = DadosDePreview.servicos,
+            erroServico = "Escolha o serviço",
+            erroValor = "Informe o valor cobrado",
+            erroPagamento = "Escolha a forma de pagamento",
+        ),
+        AcoesDoAtendimento(),
     )
 }

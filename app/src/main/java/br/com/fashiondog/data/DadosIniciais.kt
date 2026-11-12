@@ -1,6 +1,7 @@
 package br.com.fashiondog.data
 
 import br.com.fashiondog.data.local.AppDatabase
+import br.com.fashiondog.data.local.entity.Categoria
 import br.com.fashiondog.data.local.entity.Servico
 
 /**
@@ -10,11 +11,20 @@ import br.com.fashiondog.data.local.entity.Servico
  */
 object DadosIniciais {
 
+    /** Categorias de despesa sugeridas; novas podem ser criadas na tela de despesa. */
+    val CATEGORIAS = listOf(
+        "Produtos de banho", "Aluguel", "Água e luz", "Equipamentos", "Manutenção", "Outros",
+    )
+
     suspend fun garantir(db: AppDatabase) {
         val servicos = db.servicoDao()
         if (servicos.contar() == 0) {
             servicos.inserir(Servico(nome = "Banho", precoSugeridoCentavos = 5_000))
             servicos.inserir(Servico(nome = "Banho e tosa", precoSugeridoCentavos = 8_000))
+        }
+        val financeiro = db.financeiroDao()
+        if (financeiro.contarCategorias() == 0) {
+            CATEGORIAS.forEach { financeiro.inserirCategoria(Categoria(nome = it)) }
         }
     }
 }

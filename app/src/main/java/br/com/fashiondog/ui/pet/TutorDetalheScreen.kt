@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
@@ -43,13 +44,15 @@ import br.com.fashiondog.data.local.entity.Pet
 import br.com.fashiondog.data.local.entity.Tutor
 import br.com.fashiondog.data.repository.CadastroRepository
 import br.com.fashiondog.domain.Telefone
-import br.com.fashiondog.ui.componentes.Cartao
 import br.com.fashiondog.ui.componentes.Carregando
+import br.com.fashiondog.ui.componentes.Cartao
 import br.com.fashiondog.ui.componentes.DialogoConfirmacao
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.TituloSecao
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -88,8 +91,34 @@ fun TutorDetalheScreen(
 ) {
     val vm = viewModelDoApp { app, args -> TutorDetalheViewModel(app.cadastro, args) }
     val estado by vm.estado.collectAsStateWithLifecycle()
-    val contexto = LocalContext.current
     val escopo = rememberCoroutineScope()
+    TutorDetalheConteudo(
+        estado = estado,
+        aoVoltar = aoVoltar,
+        aoEditar = aoEditar,
+        aoNovoPet = aoNovoPet,
+        aoAbrirPet = aoAbrirPet,
+        aoDesativar = {
+            escopo.launch {
+                vm.desativar()
+                aoVoltar()
+            }
+        },
+        podeAlterar = podeAlterar,
+    )
+}
+
+@Composable
+fun TutorDetalheConteudo(
+    estado: TutorDetalheEstado,
+    aoVoltar: () -> Unit,
+    aoEditar: (Long) -> Unit,
+    aoNovoPet: (Long) -> Unit,
+    aoAbrirPet: (Long) -> Unit,
+    aoDesativar: () -> Unit,
+    podeAlterar: Boolean = true,
+) {
+    val contexto = LocalContext.current
     var menuAberto by remember { mutableStateOf(false) }
     var confirmarDesativar by remember { mutableStateOf(false) }
 
@@ -98,7 +127,7 @@ fun TutorDetalheScreen(
         aoVoltar = aoVoltar,
         acoes = {
             if (podeAlterar && estado.tutor != null) {
-                IconButton(onClick = { aoEditar(vm.tutorId) }) {
+                IconButton(onClick = { estado.tutor?.let { aoEditar(it.id) } }) {
                     Icon(Icons.Filled.Edit, contentDescription = "Editar tutor")
                 }
                 IconButton(onClick = { menuAberto = true }) {
@@ -170,10 +199,7 @@ fun TutorDetalheScreen(
             textoConfirmar = "Desativar",
             aoConfirmar = {
                 confirmarDesativar = false
-                escopo.launch {
-                    vm.desativar()
-                    aoVoltar()
-                }
+                aoDesativar()
             },
             aoCancelar = { confirmarDesativar = false },
         )
@@ -194,4 +220,13 @@ private fun abrir(contexto: Context, intent: Intent) {
     } catch (_: ActivityNotFoundException) {
         Toast.makeText(contexto, "Nenhum app encontrado para isso.", Toast.LENGTH_SHORT).show()
     }
+}
+
+@Preview(showBackground = true, name = "Tutor com 2 pets")
+@Composable
+private fun PreviewTutorDetalhe() = PreviewNoTema {
+    TutorDetalheConteudo(
+        TutorDetalheEstado(carregando = false, tutor = DadosDePreview.maria, pets = listOf(DadosDePreview.boris, DadosDePreview.thor)),
+        {}, {}, {}, {}, {},
+    )
 }

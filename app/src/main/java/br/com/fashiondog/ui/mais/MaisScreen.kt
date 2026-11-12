@@ -11,7 +11,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import br.com.fashiondog.ui.componentes.Tela
+import br.com.fashiondog.ui.preview.PreviewNoTema
 
 /** Um item da aba Mais. [visivel] permite esconder opções conforme o perfil (Sprint 5). */
 data class OpcaoMais(
@@ -36,4 +38,15 @@ fun MaisScreen(opcoes: List<OpcaoMais>) {
             }
         }
     }
+}
+
+@Preview(showBackground = true, name = "Aba Mais")
+@Composable
+private fun PreviewMais() = PreviewNoTema {
+    MaisScreen(
+        listOf(
+            OpcaoMais("Serviços e preços", "Preço sugerido de cada serviço") {},
+            OpcaoMais("Avisos", "Notificações e horário exato dos lembretes") {},
+        ),
+    )
 }

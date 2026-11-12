@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -49,14 +50,16 @@ import br.com.fashiondog.ui.componentes.EscolhaUnica
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
+import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
 
 data class AgendamentoFormEstado(
     val carregando: Boolean = true,
@@ -153,9 +156,38 @@ fun AgendamentoFormScreen(aoVoltar: () -> Unit) {
         AgendamentoFormViewModel(app.agenda, app.cadastro, app.atendimentos, app.sessao, args)
     }
     val estado by vm.estado.collectAsStateWithLifecycle()
-    var escolhendoPet by remember { mutableStateOf(false) }
 
     LaunchedEffect(estado.salvo) { if (estado.salvo) aoVoltar() }
+
+    AgendamentoFormConteudo(
+        estado,
+        AcoesDoAgendamento(
+            aoVoltar = aoVoltar,
+            aoEscolherPet = vm::escolherPet,
+            aoEscolherServico = vm::escolherServico,
+            aoMudarData = vm::mudarData,
+            aoMudarHora = vm::mudarHora,
+            aoEscolherLembrete = vm::escolherLembrete,
+            aoSalvar = vm::salvar,
+        ),
+    )
+}
+
+/** O que a tela pode pedir ao ViewModel. Padrões vazios para o @Preview. */
+data class AcoesDoAgendamento(
+    val aoVoltar: () -> Unit = {},
+    val aoEscolherPet: (PetComTutor) -> Unit = {},
+    val aoEscolherServico: (Servico) -> Unit = {},
+    val aoMudarData: (LocalDate) -> Unit = {},
+    val aoMudarHora: (LocalTime) -> Unit = {},
+    val aoEscolherLembrete: (Int) -> Unit = {},
+    val aoSalvar: () -> Unit = {},
+)
+
+@Composable
+fun AgendamentoFormConteudo(estado: AgendamentoFormEstado, acoes: AcoesDoAgendamento) {
+    var escolhendoPet by remember { mutableStateOf(false) }
+    val aoVoltar = acoes.aoVoltar
 
     Tela(titulo = if (estado.ehNovo) "Novo agendamento" else "Editar agendamento", aoVoltar = aoVoltar) { espacamento ->
         if (estado.carregando) {
@@ -175,27 +207,27 @@ fun AgendamentoFormScreen(aoVoltar: () -> Unit) {
                 titulo = "Serviço",
                 opcoes = estado.servicos,
                 selecionada = estado.servicos.firstOrNull { it.id == estado.servicoId },
-                aoEscolher = vm::escolherServico,
+                aoEscolher = acoes.aoEscolherServico,
                 rotuloDe = { it.nome },
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                CampoData(estado.data, vm::mudarData, "Data", modifier = Modifier.weight(1f))
-                CampoHora(estado.hora, vm::mudarHora, "Hora", modifier = Modifier.weight(1f))
+                CampoData(estado.data, acoes.aoMudarData, "Data", modifier = Modifier.weight(1f))
+                CampoHora(estado.hora, acoes.aoMudarHora, "Hora", modifier = Modifier.weight(1f))
             }
 
             EscolhaUnica(
                 titulo = "Aviso",
                 opcoes = CalculadoraDeAvisos.OPCOES_LEMBRETE,
                 selecionada = estado.lembreteMinutos,
-                aoEscolher = vm::escolherLembrete,
+                aoEscolher = acoes.aoEscolherLembrete,
                 rotuloDe = CalculadoraDeAvisos::rotuloLembrete,
             )
 
             estado.erro?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             BotaoPrincipal(
                 texto = if (estado.salvando) "Salvando..." else "Salvar agendamento",
-                aoClicar = vm::salvar,
+                aoClicar = acoes.aoSalvar,
                 habilitado = !estado.salvando,
             )
         }
@@ -205,7 +237,7 @@ fun AgendamentoFormScreen(aoVoltar: () -> Unit) {
         SeletorDePet(
             pets = estado.pets,
             aoEscolher = {
-                vm.escolherPet(it)
+                acoes.aoEscolherPet(it)
                 escolhendoPet = false
             },
             aoFechar = { escolhendoPet = false },
@@ -246,4 +278,26 @@ private fun SeletorDePet(pets: List<PetComTutor>, aoEscolher: (PetComTutor) -> U
         confirmButton = {},
         dismissButton = { TextButton(onClick = aoFechar) { Text("Fechar") } },
     )
+}
+
+@Preview(showBackground = true, name = "Novo agendamento")
+@Composable
+private fun PreviewAgendamentoForm() = PreviewNoTema {
+    AgendamentoFormConteudo(
+        AgendamentoFormEstado(
+            carregando = false,
+            pets = DadosDePreview.petsComTutor,
+            servicos = DadosDePreview.servicos,
+            pet = DadosDePreview.petsComTutor.first(),
+            servicoId = DadosDePreview.banho.id,
+            hora = LocalTime.of(14, 30),
+        ),
+        AcoesDoAgendamento(),
+    )
+}
+
+@Preview(showBackground = true, name = "Escolher pet")
+@Composable
+private fun PreviewSeletorDePet() = PreviewNoTema {
+    SeletorDePet(DadosDePreview.petsComTutor, aoEscolher = {}, aoFechar = {})
 }

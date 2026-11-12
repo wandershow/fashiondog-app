@@ -33,8 +33,10 @@ class ReceptorDeAvisos : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val texto = intent.getStringExtra(EXTRA_TEXTO).orEmpty()
-        val notificacao = NotificationCompat.Builder(contexto, intent.getStringExtra(EXTRA_CANAL) ?: Avisos.CANAL_AGENDA)
-            .setSmallIcon(R.drawable.ic_aba_agenda)
+        val canal = intent.getStringExtra(EXTRA_CANAL) ?: Avisos.CANAL_AGENDA
+        val icone = if (canal == Avisos.CANAL_PARCELAS) R.drawable.ic_aba_financeiro else R.drawable.ic_aba_agenda
+        val notificacao = NotificationCompat.Builder(contexto, canal)
+            .setSmallIcon(icone)
             .setContentTitle(intent.getStringExtra(EXTRA_TITULO))
             .setContentText(texto)
             .setStyle(NotificationCompat.BigTextStyle().bigText(texto))

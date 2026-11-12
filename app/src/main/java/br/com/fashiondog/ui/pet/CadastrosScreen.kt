@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +39,8 @@ import br.com.fashiondog.ui.componentes.Carregando
 import br.com.fashiondog.ui.componentes.EstadoVazio
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import br.com.fashiondog.ui.theme.Tinta
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -100,7 +103,19 @@ fun CadastrosScreen(
 ) {
     val vm = viewModelDoApp { app, _ -> CadastrosViewModel(app.cadastro) }
     val estado by vm.estado.collectAsStateWithLifecycle()
+    CadastrosConteudo(estado, vm::mudarBusca, vm::mudarModo, aoAbrirPet, aoAbrirTutor, aoNovoCadastro)
+}
 
+/** Parte "sem estado" da tela: só desenha o [estado] e repassa os toques. Usada no @Preview. */
+@Composable
+fun CadastrosConteudo(
+    estado: CadastrosEstado,
+    aoMudarBusca: (String) -> Unit,
+    aoMudarModo: (ModoLista) -> Unit,
+    aoAbrirPet: (Long) -> Unit,
+    aoAbrirTutor: (Long) -> Unit,
+    aoNovoCadastro: () -> Unit,
+) {
     Tela(
         titulo = "Pets e tutores",
         botaoFlutuante = {
@@ -116,7 +131,7 @@ fun CadastrosScreen(
         Column(modifier = Modifier.fillMaxSize().padding(espacamento)) {
             OutlinedTextField(
                 value = estado.busca,
-                onValueChange = vm::mudarBusca,
+                onValueChange = aoMudarBusca,
                 placeholder = { Text("Buscar por pet, tutor ou telefone") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 singleLine = true,
@@ -128,7 +143,7 @@ fun CadastrosScreen(
                 ModoLista.entries.forEachIndexed { indice, modo ->
                     SegmentedButton(
                         selected = estado.modo == modo,
-                        onClick = { vm.mudarModo(modo) },
+                        onClick = { aoMudarModo(modo) },
                         shape = SegmentedButtonDefaults.itemShape(indice, ModoLista.entries.size),
                     ) { Text(modo.rotulo) }
                 }
@@ -209,4 +224,28 @@ private fun ListaTutores(estado: CadastrosEstado, aoAbrirTutor: (Long) -> Unit) 
             HorizontalDivider()
         }
     }
+}
+
+@Preview(showBackground = true, name = "Lista de pets")
+@Composable
+private fun PreviewPets() = PreviewNoTema {
+    CadastrosConteudo(
+        CadastrosEstado(carregando = false, pets = DadosDePreview.petsComTutor, tutores = DadosDePreview.tutores),
+        {}, {}, {}, {}, {},
+    )
+}
+
+@Preview(showBackground = true, name = "Lista de tutores")
+@Composable
+private fun PreviewTutores() = PreviewNoTema {
+    CadastrosConteudo(
+        CadastrosEstado(carregando = false, modo = ModoLista.TUTORES, tutores = DadosDePreview.tutores),
+        {}, {}, {}, {}, {},
+    )
+}
+
+@Preview(showBackground = true, name = "Busca sem resultado")
+@Composable
+private fun PreviewBuscaVazia() = PreviewNoTema {
+    CadastrosConteudo(CadastrosEstado(carregando = false, busca = "rex"), {}, {}, {}, {}, {})
 }

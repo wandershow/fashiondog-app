@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -61,8 +62,11 @@ import br.com.fashiondog.domain.Semana
 import br.com.fashiondog.ui.componentes.EstadoVazio
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import br.com.fashiondog.ui.theme.Amarelo
 import br.com.fashiondog.ui.theme.Tinta
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -73,7 +77,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 data class AgendaEstado(
     val dia: LocalDate = LocalDate.now(),
@@ -133,13 +136,37 @@ fun AgendaScreen(
 ) {
     val vm = viewModelDoApp { app, _ -> AgendaViewModel(app.agenda) }
     val estado by vm.estado.collectAsStateWithLifecycle()
-    var escolhido by remember { mutableStateOf<AgendamentoDetalhado?>(null) }
 
     PedirPermissaoDeNotificacao()
 
+    AgendaConteudo(
+        estado = estado,
+        aoEscolherDia = vm::escolherDia,
+        aoMudarSemana = vm::mudarSemana,
+        aoIrParaHoje = vm::irParaHoje,
+        aoNovoAgendamento = aoNovoAgendamento,
+        aoEditar = aoEditar,
+        aoConcluir = aoConcluir,
+        aoCancelar = vm::cancelar,
+    )
+}
+
+@Composable
+fun AgendaConteudo(
+    estado: AgendaEstado,
+    aoEscolherDia: (LocalDate) -> Unit,
+    aoMudarSemana: (Long) -> Unit,
+    aoIrParaHoje: () -> Unit,
+    aoNovoAgendamento: (dia: LocalDate) -> Unit,
+    aoEditar: (agendamentoId: Long) -> Unit,
+    aoConcluir: (AgendamentoDetalhado) -> Unit,
+    aoCancelar: (agendamentoId: Long) -> Unit,
+) {
+    var escolhido by remember { mutableStateOf<AgendamentoDetalhado?>(null) }
+
     Tela(
         titulo = "Agenda",
-        acoes = { TextButton(onClick = vm::irParaHoje) { Text("Hoje") } },
+        acoes = { TextButton(onClick = aoIrParaHoje) { Text("Hoje") } },
         botaoFlutuante = {
             ExtendedFloatingActionButton(
                 onClick = { aoNovoAgendamento(estado.dia) },
@@ -151,7 +178,7 @@ fun AgendaScreen(
         },
     ) { espacamento ->
         Column(modifier = Modifier.fillMaxSize().padding(espacamento)) {
-            FaixaDaSemana(estado, vm)
+            FaixaDaSemana(estado, aoEscolherDia, aoMudarSemana)
             HorizontalDivider()
             if (estado.doDia.isEmpty()) {
                 EstadoVazio("Nada agendado para ${Datas.formatarData(estado.dia)}.")
@@ -190,7 +217,7 @@ fun AgendaScreen(
                     Row {
                         TextButton(onClick = {
                             escolhido = null
-                            vm.cancelar(item.agendamento.id)
+                            aoCancelar(item.agendamento.id)
                         }) { Text("Cancelar agendamento") }
                         TextButton(onClick = {
                             escolhido = null
@@ -213,10 +240,10 @@ val StatusAgendamento.rotulo: String
     }
 
 @Composable
-private fun FaixaDaSemana(estado: AgendaEstado, vm: AgendaViewModel) {
+private fun FaixaDaSemana(estado: AgendaEstado, aoEscolherDia: (LocalDate) -> Unit, aoMudarSemana: (Long) -> Unit) {
     Column(modifier = Modifier.padding(horizontal = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { vm.mudarSemana(-1) }) {
+            IconButton(onClick = { aoMudarSemana(-1) }) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Semana anterior")
             }
             Text(
@@ -224,7 +251,7 @@ private fun FaixaDaSemana(estado: AgendaEstado, vm: AgendaViewModel) {
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = { vm.mudarSemana(1) }) {
+            IconButton(onClick = { aoMudarSemana(1) }) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Próxima semana")
             }
         }
@@ -239,7 +266,7 @@ private fun FaixaDaSemana(estado: AgendaEstado, vm: AgendaViewModel) {
                         .weight(1f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (selecionado) Amarelo else Color.Transparent)
-                        .clickable { vm.escolherDia(dia) }
+                        .clickable { aoEscolherDia(dia) }
                         .padding(vertical = 8.dp),
                 ) {
                     Text(Semana.nomeCurto(dia), style = MaterialTheme.typography.labelSmall)
@@ -300,4 +327,26 @@ private fun PedirPermissaoDeNotificacao() {
             PackageManager.PERMISSION_GRANTED
         if (!concedida) pedir.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+}
+
+@Preview(showBackground = true, name = "Agenda do dia")
+@Composable
+private fun PreviewAgenda() = PreviewNoTema {
+    val hoje = LocalDate.now()
+    AgendaConteudo(
+        estado = AgendaEstado(
+            dia = hoje,
+            diasDaSemana = Semana.dias(hoje),
+            quantidadePorDia = mapOf(hoje to 2, hoje.plusDays(1) to 1),
+            doDia = DadosDePreview.agendaDoDia,
+        ),
+        aoEscolherDia = {}, aoMudarSemana = {}, aoIrParaHoje = {}, aoNovoAgendamento = {},
+        aoEditar = {}, aoConcluir = {}, aoCancelar = {},
+    )
+}
+
+@Preview(showBackground = true, name = "Dia sem agendamentos")
+@Composable
+private fun PreviewAgendaVazia() = PreviewNoTema {
+    AgendaConteudo(AgendaEstado(), {}, {}, {}, {}, {}, {}, {})
 }

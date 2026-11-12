@@ -97,6 +97,13 @@ interface AtendimentoDao {
     @Query("SELECT COALESCE(SUM(valorCentavos), 0) FROM atendimento WHERE data >= :inicio AND data < :fim")
     suspend fun somarReceitaEntre(inicio: Long, fim: Long): Long
 
+    /** Receita do período que se atualiza sozinha (para a tela do financeiro). */
+    @Query("SELECT COALESCE(SUM(valorCentavos), 0) FROM atendimento WHERE data >= :inicio AND data < :fim")
+    fun observarReceitaEntre(inicio: Long, fim: Long): Flow<Long>
+
+    @Query("SELECT COUNT(*) FROM atendimento WHERE data >= :inicio AND data < :fim")
+    fun observarQuantidadeEntre(inicio: Long, fim: Long): Flow<Int>
+
     @Insert
     suspend fun inserirFoto(foto: Foto): Long
 

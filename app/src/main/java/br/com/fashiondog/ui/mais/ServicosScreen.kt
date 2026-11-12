@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -25,6 +26,8 @@ import br.com.fashiondog.ui.componentes.CampoDinheiro
 import br.com.fashiondog.ui.componentes.Formulario
 import br.com.fashiondog.ui.componentes.Tela
 import br.com.fashiondog.ui.componentes.viewModelDoApp
+import br.com.fashiondog.ui.preview.DadosDePreview
+import br.com.fashiondog.ui.preview.PreviewNoTema
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -48,6 +51,15 @@ class ServicosViewModel(private val repositorio: AtendimentoRepository) : ViewMo
 fun ServicosScreen(aoVoltar: () -> Unit) {
     val vm = viewModelDoApp { app, _ -> ServicosViewModel(app.atendimentos) }
     val servicos by vm.servicos.collectAsStateWithLifecycle()
+    ServicosConteudo(servicos, aoVoltar, vm::mudarPreco)
+}
+
+@Composable
+fun ServicosConteudo(
+    servicos: List<Servico>,
+    aoVoltar: () -> Unit,
+    aoMudarPreco: (Servico, Long) -> Unit,
+) {
     var editando by remember { mutableStateOf<Servico?>(null) }
 
     Tela(titulo = "Serviços e preços", aoVoltar = aoVoltar) { espacamento ->
@@ -77,7 +89,7 @@ fun ServicosScreen(aoVoltar: () -> Unit) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        vm.mudarPreco(servico, centavos)
+                        aoMudarPreco(servico, centavos)
                         editando = null
                     },
                     enabled = centavos > 0,
@@ -86,4 +98,10 @@ fun ServicosScreen(aoVoltar: () -> Unit) {
             dismissButton = { TextButton(onClick = { editando = null }) { Text("Cancelar") } },
         )
     }
+}
+
+@Preview(showBackground = true, name = "Serviços e preços")
+@Composable
+private fun PreviewServicos() = PreviewNoTema {
+    ServicosConteudo(DadosDePreview.servicos, aoVoltar = {}, aoMudarPreco = { _, _ -> })
 }

@@ -13,7 +13,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -23,7 +25,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import br.com.fashiondog.FashionDogApplication
 import br.com.fashiondog.R
+import br.com.fashiondog.data.local.entity.Perfil
+import br.com.fashiondog.data.local.entity.Usuario
+import br.com.fashiondog.domain.Datas
+import br.com.fashiondog.domain.Permissoes
 import br.com.fashiondog.ui.agenda.AgendaScreen
 import br.com.fashiondog.ui.agenda.AgendamentoFormScreen
 import br.com.fashiondog.ui.atendimento.AtendimentoDetalheScreen
@@ -31,14 +38,18 @@ import br.com.fashiondog.ui.atendimento.AtendimentoFormScreen
 import br.com.fashiondog.ui.financeiro.DespesaFormScreen
 import br.com.fashiondog.ui.financeiro.FinanceiroScreen
 import br.com.fashiondog.ui.mais.AvisosScreen
+import br.com.fashiondog.ui.mais.BackupScreen
 import br.com.fashiondog.ui.mais.MaisScreen
 import br.com.fashiondog.ui.mais.OpcaoMais
 import br.com.fashiondog.ui.mais.ServicosScreen
+import br.com.fashiondog.ui.mais.TrocarSenhaScreen
+import br.com.fashiondog.ui.mais.UsuariosScreen
 import br.com.fashiondog.ui.pet.CadastrosScreen
 import br.com.fashiondog.ui.pet.FichaPetScreen
 import br.com.fashiondog.ui.pet.PetFormScreen
 import br.com.fashiondog.ui.pet.TutorDetalheScreen
 import br.com.fashiondog.ui.pet.TutorFormScreen
+import kotlinx.coroutines.launch
 
 /** As quatro abas da barra inferior. */
 enum class Aba(val rota: String, val rotulo: String, @param:DrawableRes val icone: Int) {
@@ -53,12 +64,19 @@ private fun idArg(nome: String) = navArgument(nome) {
     defaultValue = -1L
 }
 
+/**
+ * O app depois do login. As permissões do [usuario] decidem o que aparece:
+ * funcionário não vê a aba Financeiro nem as opções de dono na aba Mais.
+ */
 @Composable
-fun FashionDogApp() {
+fun FashionDogApp(usuario: Usuario) {
     val navController = rememberNavController()
     val entradaAtual by navController.currentBackStackEntryAsState()
     val rotaAtual = entradaAtual?.destination?.route
-    val abas = Aba.entries
+    val perfil = usuario.perfil
+    val escopo = rememberCoroutineScope()
+    val container = (LocalContext.current.applicationContext as FashionDogApplication).container
+    val abas = Aba.entries.filter { it != Aba.FINANCEIRO || Permissoes.veFinanceiro(perfil) }
     // A barra inferior só aparece nas telas principais; formulários e fichas ocupam a tela toda.
     val mostrarBarra = abas.any { it.rota == rotaAtual }
 
@@ -99,33 +117,54 @@ fun FashionDogApp() {
             composable(Rotas.AGENDAMENTO_FORM, arguments = listOf(idArg("agendamentoId"), idArg("dia"))) {
                 AgendamentoFormScreen(aoVoltar = { navController.popBackStack() })
             }
-            composable(Aba.FINANCEIRO.rota) {
-                FinanceiroScreen(aoNovaDespesa = { navController.navigate(Rotas.DESPESA_FORM) })
+            // Rotas do financeiro nem existem para o funcionário.
+            if (Permissoes.veFinanceiro(perfil)) {
+                composable(Aba.FINANCEIRO.rota) {
+                    FinanceiroScreen(aoNovaDespesa = { navController.navigate(Rotas.DESPESA_FORM) })
+                }
+                composable(Rotas.DESPESA_FORM) { DespesaFormScreen(aoVoltar = { navController.popBackStack() }) }
             }
-            composable(Rotas.DESPESA_FORM) { DespesaFormScreen(aoVoltar = { navController.popBackStack() }) }
             composable(Aba.MAIS.rota) {
                 MaisScreen(
+                    cabecalho = "${usuario.nome} · " + if (perfil == Perfil.PROPRIETARIO) "Proprietário" else "Funcionário",
                     opcoes = listOf(
-                        OpcaoMais("Serviços e preços", "Preço sugerido de cada serviço") {
+                        OpcaoMais("Serviços e preços", "Preço sugerido de cada serviço", Permissoes.alteraPrecos(perfil)) {
                             navController.navigate(Rotas.SERVICOS)
+                        },
+                        OpcaoMais("Usuários", "Funcionários, senhas e acessos", Permissoes.gerenciaUsuarios(perfil)) {
+                            navController.navigate(Rotas.USUARIOS)
+                        },
+                        OpcaoMais("Backup", "Salvar ou restaurar todos os dados e fotos", Permissoes.fazBackup(perfil)) {
+                            navController.navigate(Rotas.BACKUP)
                         },
                         OpcaoMais("Avisos", "Notificações e horário exato dos lembretes") {
                             navController.navigate(Rotas.AVISOS)
                         },
+                        OpcaoMais("Trocar minha senha", "Senha de ${usuario.login}") {
+                            navController.navigate(Rotas.TROCAR_SENHA)
+                        },
+                        OpcaoMais("Sair", "Voltar para a tela de login") {
+                            escopo.launch { container.contas.sair() }
+                        },
                     ),
                 )
             }
-            composable(Rotas.SERVICOS) { ServicosScreen(aoVoltar = { navController.popBackStack() }) }
             composable(Rotas.AVISOS) { AvisosScreen(aoVoltar = { navController.popBackStack() }) }
+            composable(Rotas.TROCAR_SENHA) { TrocarSenhaScreen(aoVoltar = { navController.popBackStack() }) }
+            if (perfil == Perfil.PROPRIETARIO) {
+                composable(Rotas.SERVICOS) { ServicosScreen(aoVoltar = { navController.popBackStack() }) }
+                composable(Rotas.USUARIOS) { UsuariosScreen(meuId = usuario.id, aoVoltar = { navController.popBackStack() }) }
+                composable(Rotas.BACKUP) { BackupScreen(aoVoltar = { navController.popBackStack() }) }
+            }
 
-            cadastros(navController)
-            atendimentos(navController)
+            cadastros(navController, podeAlterar = Permissoes.alteraCadastroExistente(perfil))
+            atendimentos(navController, perfil)
         }
     }
 }
 
 /** Telas da Sprint 1: pets e tutores. */
-private fun androidx.navigation.NavGraphBuilder.cadastros(nav: NavHostController) {
+private fun androidx.navigation.NavGraphBuilder.cadastros(nav: NavHostController, podeAlterar: Boolean) {
     composable(Aba.PETS.rota) {
         CadastrosScreen(
             aoAbrirPet = { nav.navigate(Rotas.pet(it)) },
@@ -152,6 +191,7 @@ private fun androidx.navigation.NavGraphBuilder.cadastros(nav: NavHostController
             aoEditar = { nav.navigate(Rotas.tutorForm(it)) },
             aoNovoPet = { nav.navigate(Rotas.novoPet(it)) },
             aoAbrirPet = { nav.navigate(Rotas.pet(it)) },
+            podeAlterar = podeAlterar,
         )
     }
     composable(Rotas.PET_FORM, arguments = listOf(idArg("petId"), idArg("tutorId"))) {
@@ -167,12 +207,13 @@ private fun androidx.navigation.NavGraphBuilder.cadastros(nav: NavHostController
             aoAbrirTutor = { nav.navigate(Rotas.tutor(it)) },
             aoNovoAtendimento = { nav.navigate(Rotas.novoAtendimento(it)) },
             aoAbrirAtendimento = { nav.navigate(Rotas.atendimento(it)) },
+            podeAlterar = podeAlterar,
         )
     }
 }
 
 /** Telas da Sprint 2: atendimentos. */
-private fun androidx.navigation.NavGraphBuilder.atendimentos(nav: NavHostController) {
+private fun androidx.navigation.NavGraphBuilder.atendimentos(nav: NavHostController, perfil: Perfil) {
     composable(
         Rotas.ATENDIMENTO_FORM,
         arguments = listOf(idArg("petId"), idArg("atendimentoId"), idArg("agendamentoId"), idArg("servicoId")),
@@ -186,6 +227,7 @@ private fun androidx.navigation.NavGraphBuilder.atendimentos(nav: NavHostControl
         AtendimentoDetalheScreen(
             aoVoltar = { nav.popBackStack() },
             aoEditar = { nav.navigate(Rotas.editarAtendimento(it)) },
+            podeEditar = { data -> Permissoes.editaAtendimento(perfil, Datas.paraLocalDate(data)) },
         )
     }
 }

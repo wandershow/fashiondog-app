@@ -8,8 +8,8 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - Room 2.8.4 com KSP 2.3.6; Navigation Compose 2.9.0
 - minSdk 26, compileSdk/targetSdk 37
 - Versões ficam em `gradle/libs.versions.toml`
-- Hilt ainda **não** foi adicionado; entra quando as telas começarem a usar o banco (se usar, versão compatível com AGP 9)
-- Previsto para depois: ViewModel + StateFlow, DataStore (sessão), AlarmManager (avisos), câmera do sistema + Coil (fotos)
+- Injeção de dependência **manual** (`di/AppContainer.kt`), sem Hilt; ViewModels criados com `viewModelDoApp { app, args -> ... }`
+- ViewModel + StateFlow (lifecycle 2.9.4). Previsto para depois: DataStore (sessão), AlarmManager (avisos), câmera do sistema + Coil (fotos)
 
 ## Comandos
 
@@ -21,7 +21,8 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - `data/local/entity` — entidades Room; `data/local/dao` — DAOs; `data/local/AppDatabase.kt`
 - `domain/` — regras em Kotlin puro, com teste unitário (ex.: `GeradorDeParcelas`)
 - `ui/theme` — cores da marca; `ui/navigation/FashionDogApp.kt` — barra inferior com 4 abas
-- A criar: `ui/login`, `ui/agenda`, `ui/pet`, `ui/atendimento`, `ui/financeiro`, `notifications/`, `backup/`
+- `data/repository` — repositórios; `ui/componentes` — peças de tela; `ui/pet` — pets e tutores
+- A criar: `ui/login`, `ui/agenda`, `ui/atendimento`, `ui/financeiro`, `notifications/`, `backup/`
 
 ## Requisitos
 
@@ -52,7 +53,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 
 - [x] Etapas 1–3: requisitos, modelo de dados e protótipo das telas aprovados
 - [x] Sprint 0: projeto, tema, ícone, banco (10 tabelas), navegação vazia, gerador de parcelas com testes
-- [ ] Sprint 1: cadastro de tutores e pets (lista, busca, formulário)
+- [x] Sprint 1: cadastro de tutores e pets — `docs/sprints/sprint-1-cadastro.md`
 - [ ] Sprint 2: atendimentos, fotos e histórico do pet
 - [ ] Sprint 3: agenda e notificações
 - [ ] Sprint 4: financeiro (despesas, parcelas, avisos, balanço)
@@ -63,4 +64,6 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 
 - Branch `main` sempre funcionando; cada tarefa em `feature/...`; commits `feat:`, `fix:`, `test:`, `docs:`.
 - Regra nova em `domain/` vem com teste unitário.
+- Cada sprint é documentada em `docs/sprints/sprint-N-*.md` (objetivo, decisões, testes, roteiro manual).
+- Emulador local não roda (pouco disco/RAM): validar com build + testes e no celular físico.
 - Explicar as decisões em linguagem simples: o dono está aprendendo Android.

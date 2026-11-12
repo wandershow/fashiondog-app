@@ -15,6 +15,9 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 
 - Compilar: `./gradlew assembleDebug` (no Windows: `gradlew.bat assembleDebug`)
 - Testes unitários: `./gradlew testDebugUnitTest`
+- Produção: `gradlew.bat assembleRelease` (assinado se existir `keystore.properties`); homologação: `assembleHomologacao`
+- Build types: `debug` = `br.com.fashiondog.debug` "FashionDog (teste)"; `homologacao` = `.homolog`; `release` = `br.com.fashiondog`. Testar no celular SEMPRE com debug/homolog — nunca sobrescrever o app de produção da dona
+- Chave de produção: `D:\AndroidDev\FashionDog-chave\fashiondog-release.jks` (alias `fashiondog`); senha em `keystore.properties` (gitignored). NUNCA versionar nem exibir a senha. Nova versão: aumentar `versionCode` e `versionName`
 
 ## Estrutura (`app/src/main/java/br/com/fashiondog/`)
 
@@ -59,6 +62,7 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - [x] Sprint 3: agenda e notificações — `docs/sprints/sprint-3-agenda.md`
 - [x] Sprint 4: financeiro (despesas, parcelas, avisos, balanço) — `docs/sprints/sprint-4-financeiro.md`
 - [x] Sprint 5: login/perfis, backup e acabamento — `docs/sprints/sprint-5-login-backup.md`
+- [x] Versão de produção 1.0.0: chave, build types, APK em `dist/`, docs em `docs/producao/` e `docs/TUTORIAL.md` (manter o tutorial atualizado a cada mudança de tela)
 - [x] Ajuste 01: Minha conta (mudar nome/login) — `docs/ajustes/01-minha-conta.md`. Ajustes pós-sprint vão em `docs/ajustes/NN-*.md`
 - [x] Sprint 0 (fim): repositório público https://github.com/wandershow/fashiondog-app, README e GitHub Actions (`.github/workflows/build.yml`) rodando build e testes em push na `main` e em PRs
 
@@ -68,5 +72,6 @@ App Android para um banho e tosa (FashionDog, Rio Grande/RS). Roda em **um únic
 - Regra nova em `domain/` vem com teste unitário.
 - Toda tela tem duas partes: `XxxScreen` (pega o ViewModel) e `XxxConteudo` (só desenha, recebe estado + callbacks), com **`@Preview`** do Conteudo usando `ui/preview/DadosDePreview.kt` e `PreviewNoTema`.
 - Cada sprint é documentada em `docs/sprints/sprint-N-*.md` (objetivo, decisões, testes, roteiro manual).
-- Emulador local não roda (pouco disco/RAM): validar com build + testes e no celular físico.
+- Ambiente fora do C: (pouco espaço): tudo em `D:\AndroidDev` — `gradle` (GRADLE_USER_HOME), `Sdk` (ANDROID_HOME), `android-user` (ANDROID_USER_HOME: AVD, debug.keystore, adbkey), `studio` (caches do Studio via STUDIO_PROPERTIES). Ver `docs/producao/ambiente.md`. adb: `D:\AndroidDev\Sdk\platform-tools\adb.exe`
+- Emulador local não roda (RAM 8 GB): validar com build + testes e no celular físico.
 - Explicar as decisões em linguagem simples: o dono está aprendendo Android.

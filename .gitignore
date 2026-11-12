@@ -14,3 +14,10 @@
 .cxx
 local.properties
 .kotlin
+
+# Assinatura de produção: nunca versionar
+keystore.properties
+*.jks
+*.keystore
+# APKs gerados para distribuir
+/dist

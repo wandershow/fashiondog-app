@@ -9,6 +9,11 @@ atendimentos com fotos de antes/depois e controle financeiro com parcelas no bol
 > ✅ Versão 1.0.0 — todas as sprints concluídas. Projeto acadêmico (Análise e Desenvolvimento de Sistemas) feito
 > seguindo o fluxo de uma empresa real: requisitos → modelo de dados → protótipo → sprints.
 
+## Para quem usa o app
+
+- 📖 **[Tutorial com todas as funcionalidades](docs/TUTORIAL.md)**
+- 📲 **[Como instalar pelo APK em um celular](docs/producao/instalar-apk.md)**
+
 ## Funcionalidades
 
 | Módulo | O que faz | Status |
@@ -92,6 +97,17 @@ cd fashiondog-app
 ```
 
 O APK fica em `app/build/outputs/apk/debug/`.
+
+### Tipos de build
+
+| Tipo | Nome no celular | Uso |
+|---|---|---|
+| `debug` | FashionDog (teste) | desenvolvimento — instala separado do app de verdade |
+| `homologacao` | FashionDog (homolog) | conferir a versão otimizada antes de entregar |
+| `release` | FashionDog | produção, assinada (`gradlew.bat assembleRelease`) |
+
+A chave de assinatura **não** fica no repositório. Veja
+[`docs/producao/assinatura-e-release.md`](docs/producao/assinatura-e-release.md).
 
 ## Andamento
 
